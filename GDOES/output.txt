@@ -1,0 +1,236 @@
+33 number of different file formats
+8 number of element dicts
+1657 number of different files
+gdoeskeys
+
+Ag 328
+Ag 328/Fi
+Al 396
+Al 396/Fi
+Ar 359
+Ar 359/Fi
+As 189
+As 189/Fi
+B 250
+B 250/Fi
+Bi 307
+Bi 307/Fi
+Br 149
+Br 149/Fi
+C 156
+C 156/Fi
+Ca 393
+Ca 393/Fi
+Cd 229
+Cd 229/Fi
+Cl 135
+Cl 135/Fi
+Co 345
+Co 345/Fi
+Cr 425
+Cr 425/Fi
+Cu 325
+Cu 325/Fi
+Cu 325/Fi mva20
+Fe 386
+Fe 386/Fi
+Fe 386/Fi mva20
+Fi
+Fi*10
+Fi*100
+Fp
+Ga 417
+Ga 417/Fi
+H 122
+H 122/Fi
+Hf 287
+Hf 287/Fi
+In 451
+In 451/Fi
+K 766
+K 766/Fi
+Mg 285
+Mg 285/Fi
+Mn 258
+Mn 258/Fi
+Mo 317
+Mo 317/Fi
+Mo 317/Fi mva20
+Mod
+N 149
+N 149/Fi
+Na 590
+Na 590/Fi
+Ni 349
+Ni 349/Fi
+O 130
+O 130/Fi
+P 178
+P 178/Fi
+P f
+Pb 220
+Pb 220/Fi
+Pd 340
+Pd 340/Fi
+Pha
+S 181
+S 181/Fi
+Se 207
+Se 207 mva20
+Se 207/Fi
+Se 207/Fi mva20
+Se 241
+Se 241 mva20
+Se 241/Fi
+Se 241/Fi mva20
+Si 288
+Si 288/Fi
+Sn 284
+Sn 284/Fi
+Sr 408
+Sr 408/Fi
+Ta 240
+Ta 240/Fi
+Te 200
+Te 200/Fi
+Ti 365
+Ti 365/Fi
+Tl 535
+Tl 535/Fi
+V 411
+V 411/Fi
+Vrf
+W 429
+W 429/Fi
+X
+Y 371
+Y 371/Fi
+Zn 335
+Zn 335/Fi
+Zr 360
+Zr 360/Fi
+
+integral keys
+
+Ag 328
+Ag 328/Fi
+Al 396
+Al 396/Fi
+Ar 359
+Ar 359/Fi
+As 189
+As 189/Fi
+B 250
+B 250/Fi
+Bi 307
+Bi 307/Fi
+Br 149
+Br 149/Fi
+C 156
+C 156/Fi
+Ca 393
+Ca 393/Fi
+Cd 229
+Cd 229/Fi
+Cd in CIGS
+Cl 135
+Cl 135/Fi
+Co 345
+Co 345/Fi
+Cr 425
+Cr 425/Fi
+Cu 325
+Cu 325/Fi
+Cu 325/Fi mva20
+Fe 386
+Fe 386/Fi
+Fe 386/Fi mva20
+Fi
+Fi*10
+Fi*100
+Fp
+Ga 417
+Ga 417/Fi
+H 122
+H 122/Fi
+Hf 287
+Hf 287/Fi
+In 451
+In 451/Fi
+In in CIGS
+In in ITO
+K 766
+K 766/Fi
+Mg 285
+Mg 285/Fi
+Mn 258
+Mn 258/Fi
+Mo 317
+Mo 317/Fi
+Mo 317/Fi mva20
+Mod
+N 149
+N 149/Fi
+Na 590
+Na 590/Fi
+Na below CIGS
+Na in CIGS
+Na in Mo
+Na in MoSe2
+Na in TCO
+Na in TCO+CIGS
+Ni 349
+Ni 349/Fi
+O 130
+O 130/Fi
+P 178
+P 178/Fi
+P f
+Pb 220
+Pb 220/Fi
+Pd 340
+Pd 340/Fi
+Pha
+S 181
+S 181/Fi
+Se 207
+Se 207 mva20
+Se 207/Fi
+Se 207/Fi mva20
+Se 241
+Se 241 mva20
+Se 241/Fi
+Se 241/Fi mva20
+Se in CIGS
+Se in MoSe2
+Si 288
+Si 288/Fi
+Sn 284
+Sn 284/Fi
+Sr 408
+Sr 408/Fi
+Ta 240
+Ta 240/Fi
+Te 200
+Te 200/Fi
+Ti 365
+Ti 365/Fi
+Tl 535
+Tl 535/Fi
+V 411
+V 411/Fi
+Vrf
+W 429
+W 429/Fi
+X
+Y 371
+Y 371/Fi
+Zn 335
+Zn 335/Fi
+Zr 360
+Zr 360/Fi
+element dict
+
+{'*Cu': 'Cu 325', '*Cr': 'Cr 425', 'Se/Fi': 'Se 207', '*Cd': 'Cd 229', '*Ca': 'Ca 393', 'H/Fi': 'H 122', '*Se': 'Se 207', 'Zn*8': 'Zn 335', 'Fe/Fi': 'Fe 386', 'Ta/Fi': 'Ta 240', '*Sn': 'Sn 284', '*Si': 'Si 288', 'V/Fi': 'V 411', 'Br': 'Br 149', '*Ga': 'Ga 417', 'Poly Se': 'Se 241', 'H': 'H 122', 'Se*150': 'Se 207', 'P': 'P 178', 'N/Fi': 'N 149', 'Se2/Fi2': 'Se 207', 'Si/Fi': 'Si 288', 'Cl/Fi': 'Cl 135', 'Mo/Fi': 'Mo 317', '*In': 'In 451', 'C': 'C 156', 'Pb': 'Pb 220', '*Al': 'Al 396', 'Pd': 'Pd 340', 'Mo*20': 'Mo 317', 'Ga/Fi': 'Ga 417', 'Cr/Fi': 'Cr 425', 'Hf': 'Hf 287', 'K': 'K 766', 'Mg': 'Mg 285', 'Ga': 'Ga 417', 'Se1/Fi1': 'Se 241', 'Mo': 'Mo 317', 'Mn': 'Mn 258', 'Mg/Fi': 'Mg 285', 'O': 'O 130', 'S': 'S 181', '*Se1': 'Se 241', 'W': 'W 429', 'O*100': 'O 130', 'Mn/Fi': 'Mn 258', 'Br/Fi': 'Br 149', 'N*2E003': 'N 149', 'Zr': 'Zr 360', 'Ni': 'Ni 349', 'Sn/Fi': 'Sn 284', 'Ag/Fi': 'Ag 328', 'Na': 'Na 590', 'Al/Fi': 'Al 396', 'O/Fi': 'O 130', '*Ti': 'Ti 365', 'Ni/Fi': 'Ni 349', 'Fe': 'Fe 386', 'Bi': 'Bi 307', 'O*20': 'O 130', 'B': 'B 250', 'S/Fi': 'S 181', 'Sr': 'Sr 408', 'Zn': 'Zn 335', 'Se*200': 'Se 207', 'N': 'N 149', 'Si': 'Si 288', 'Sn': 'Sn 284', 'V': 'V 411', 'Se': 'Se 207', 'Co/Fi': 'Co 345', 'Co': 'Co 345', 'Cl': 'Cl 135', 'Na/Fi': 'Na 590', 'Ca': 'Ca 393', 'In/Fi': 'In 451', 'Cd': 'Cd 229', 'C/Fi': 'C 156', '*Na': 'Na 590', 'Cr': 'Cr 425', 'Cu': 'Cu 325', '*Zn': 'Zn 335', 'W/Fi': 'W 429', 'Al': 'Al 396', 'Tl': 'Tl 535', 'Ti': 'Ti 365', 'O*1000': 'O 130', 'Te': 'Te 200', 'Ta': 'Ta 240', 'In/4': 'In 451', 'Se mono': 'Se 207', 'K/Fi': 'K 766', 'Cu*5': 'Cu 325', '*S': 'S 181', '*Mo': 'Mo 317', '*Mg': 'Mg 285', 'H*1E003': 'H 122', 'S*500': 'S 181', 'Se*10': 'Se 241', '*Fe': 'Fe 386', 'Cd/Fi': 'Cd 229', 'Y': 'Y 371', 'Ca/Fi': 'Ca 393', 'Ag': 'Ag 328', 'Cu/Fi': 'Cu 325', 'Zn/Fi': 'Zn 335', 'As': 'As 189', 'Ar': 'Ar 359', 'Ti/Fi': 'Ti 365', 'In': 'In 451', '*Ag': 'Ag 328'}
+earliest run time: time.struct_time(tm_year=2013, tm_mon=9, tm_mday=23, tm_hour=16, tm_min=21, tm_sec=28, tm_wday=0, tm_yday=266, tm_isdst=1)
+total file size: 3986793377

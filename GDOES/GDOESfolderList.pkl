@@ -1,0 +1,12 @@
+(dp0
+S'TCO'
+p1
+(dp2
+S'path'
+p3
+S'Y:/Characterization/GDOES/TCO/'
+p4
+sS'latestMtime'
+p5
+F1434465825.9415848
+ss.
