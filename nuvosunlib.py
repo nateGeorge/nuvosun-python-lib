@@ -46,13 +46,25 @@ def getLatestEffFile():
     latestEffFile = sortedEffFiles[-1]
     return effFileDir + latestEffFile
 
+def get_addenda_eff_files():
+    """Returns an array of efficiency addenda files for updating efficiency data.
+    """
+    addendaFolder = 'Y:/Nate/all eff data/addenda/'
+    fileList = os.listdir(addendaFolder)
+    addendaList = []
+    for thing in fileList:
+        thing = addendaFolder + thing
+        if os.path.isfile(thing):
+            addendaList.append(thing)
+    return addendaList
+    
 def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stash_file = False):
     # imports efficiency file into dictionary (which is returned), with primary keys as substrates, secondary keys as web IDs
     # crapSubstrateLabels = ['0','110110','GLOBAL','NA','REF01','SPECIAL NEW','SPECIAL OLD','SPECIAL']
     # effCutoff allows you to exclude data with efficiency below effCufoff
     # stash_file will save the effData dict in a pickle file so you don't have to process if the efficiency file isn't new
     effUpToDate = False
-    
+    effPklFile = 'effData.pkl'
     if stash_file:
         logFile = 'Y:/Nate/all eff data/stash/effLogFile.txt'
         effDBFile = 'Y:/Nate/all eff data/stash/latest eff dict.pkl'
@@ -61,18 +73,24 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stash_file = Fa
         if os.path.isfile(logFile):
             with open(logFile,'a+') as effLogFile:
                 latestDate = effLogFile.readlines()[-1]
-                if latestDate == latestEffFileDate:
+                if latestDate == latestEffFileDate and os.path.isfile(effPklFile):
                     effUpToDate = True
                     effData = pickle.load(open(effPklFile,'rb'))
+                    print 'loaded eff data from saved file'
                 else:
                     effUpToDate = False
-                    runDateLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
+                    with open(logFile,'wb') as effLogFile:
+                        effLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
         else:
-            with open(logFile,'wb') as runDateLogFile:
-                runDateLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
+            with open(logFile,'wb') as effLogFile:
+                effLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
     
     if not effUpToDate:
-        colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run','BC Tool','BE Tool','PC Tool','Se Tool', 'Cds Tool','TCO Tool','Baked','Cell Eff Avg','Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg', 'BE Recipe', 'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot'] # other columns you could import: 'Bake Duration','LightSoak'
+        colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
+        'BC Tool','BE Tool','PC Tool','Se Tool', 'Cds Tool','TCO Tool','Baked','Cell Eff Avg',
+        'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg', 'BE Recipe', 
+        'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot'] 
+        # other columns you could import: 'Bake Duration','LightSoak'
         effData = {}
         tempDataHolder = {}
         effReader = csv.DictReader(open(effFile,'rb'),delimiter =',')
@@ -91,9 +109,6 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stash_file = Fa
 
 
     return effData
-
-
-
 
 def interp_to_eff(eff_data_DW,dataset_DW,dataset):
     min_effdw=min(eff_data_DW)
@@ -277,23 +292,24 @@ def get_memory_use():
     w = WMI('.')
     result = w.query("SELECT WorkingSet FROM Win32_PerfRawData_PerfProc_Process WHERE IDProcess=%d" % os.getpid())
     return result#['WorkingSet'])
-    
-    
+   
 def get_XRF_data(runs):
     ##################get all the XRF data of an array of run numbers, runs
     XRFsheetNames = ["MC01 XRF", "MC02 XRF", "XRF"]
     keys = ['DT','Cu','Ga','Mo','Se','Thickness','In','DW','Cu3','In3','Ga3']
     keysToInterp = ['DT','Cu','Ga','Mo','Se','Thickness','In']
     XRFdata = {}
+    runsWithNoXRFfile = []
     tempXRFdata = {}# to use to get raw data, interp to get full data
-    basepath = 'Y:\Experiment Summaries\Year 20'
+    basepath = 'Y:\\Experiment Summaries\\Year 20'
     years = [13,14,15,16]
     for eachRun in runs:
         eachRun = str(eachRun)
         noXRFfile = True
         print 'searching for XRF file for', eachRun
         for year in years:
-            runPath = basepath + str(year) + '\\' + 'S00' + str(eachRun) + '\\'
+            runPath = basepath + str(year) + '\\' + 'S' + str(eachRun) + '\\'
+            print runPath
             if os.path.exists(runPath):
                 #print runPath
                 
@@ -363,31 +379,38 @@ def get_XRF_data(runs):
 
                         rowcounter=0
                         for row in ws4.iter_rows():
-                            if rowcounter==0:
-                                #labels=[row[2].value,row[3].value,row[3].value,row[10].value.encode('utf-8')]
-                                rowcounter+=1
-                                pass
-                            elif rowcounter == 1 and row[dwRow].value>=0 and float(row[dwRow].value)!=-5.57:#-5.57 shows up in 389 when two rows are missing in 'web length' column # this used to be in there too: and row[dwRow].value<=allrundata[eachRun][1]
-                                if row[dtRow].value!=None:
-                                    if type(row[dtRow].value) != datetime.datetime:
-                                        tempDate = dateParser(row[dtRow].value)
-                                    else:
-                                        tempDate = row[dtRow].value
-                                    epochDT = (tempDate - datetime.datetime(1970,1,1)).total_seconds()
-                                    tempXRFdata[eachRun]['DT'].append([epochDT,row[dwRow].value])
-                                if row[cuRow].value!=None:
-                                    tempXRFdata[eachRun]['Cu'].append([row[cuRow].value,row[dwRow].value])
-                                if row[gaRow].value!=None:
-                                    tempXRFdata[eachRun]['Ga'].append([row[gaRow].value,row[dwRow].value])
-                                if row[moRow].value!=None:
-                                    tempXRFdata[eachRun]['Mo'].append([row[moRow].value,row[dwRow].value])
-                                if row[seRow].value!=None:
-                                    tempXRFdata[eachRun]['Se'].append([row[seRow].value,row[dwRow].value])
-                                if row[thRow].value!=None:
-                                    tempXRFdata[eachRun]['Thickness'].append([row[thRow].value,row[dwRow].value])
-                                if row[inRow].value!=None:
-                                    tempXRFdata[eachRun]['In'].append([row[inRow].value,row[dwRow].value])
-                                XRFdata[eachRun]['DW'].append(row[dwRow].value)
+                            try:
+                                if rowcounter==0:
+                                    #labels=[row[2].value,row[3].value,row[3].value,row[10].value.encode('utf-8')]
+                                    rowcounter+=1
+                                    pass
+                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=0 and float(row[dwRow].value)!=-5.57:#-5.57 shows up in 389 when two rows are missing in 'web length' column # this used to be in there too: and row[dwRow].value<=allrundata[eachRun][1]
+                                    if row[dtRow].value!=None:
+                                        if type(row[dtRow].value) != datetime.datetime:
+                                            try:
+                                                tempDate = dateParser(row[dtRow].value)
+                                            except Exception as e:
+                                                print e
+                                                print row[dtRow].value
+                                        else:
+                                            tempDate = row[dtRow].value
+                                        epochDT = (tempDate - datetime.datetime(1970,1,1)).total_seconds()
+                                        tempXRFdata[eachRun]['DT'].append([epochDT,row[dwRow].value])
+                                    if row[cuRow].value!=None:
+                                        tempXRFdata[eachRun]['Cu'].append([row[cuRow].value,row[dwRow].value])
+                                    if row[gaRow].value!=None:
+                                        tempXRFdata[eachRun]['Ga'].append([row[gaRow].value,row[dwRow].value])
+                                    if row[moRow].value!=None:
+                                        tempXRFdata[eachRun]['Mo'].append([row[moRow].value,row[dwRow].value])
+                                    if row[seRow].value!=None:
+                                        tempXRFdata[eachRun]['Se'].append([row[seRow].value,row[dwRow].value])
+                                    if row[thRow].value!=None:
+                                        tempXRFdata[eachRun]['Thickness'].append([row[thRow].value,row[dwRow].value])
+                                    if row[inRow].value!=None:
+                                        tempXRFdata[eachRun]['In'].append([row[inRow].value,row[dwRow].value])
+                                    XRFdata[eachRun]['DW'].append(row[dwRow].value)
+                            except Exception as e:
+                                print e
                 
         if not noXRFfile: #if found the XRF file
             print 'found xrf file for run ', eachRun
