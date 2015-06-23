@@ -1,7 +1,7 @@
 from openpyxl import load_workbook
 from scipy.integrate import simps
 import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util, glob, pickle
-import sqlite3 as sq
+import sqlite3 as sql
 import numpy as np
 from dateutil.parser import parse as dateParser
 
@@ -58,40 +58,59 @@ def get_addenda_eff_files():
             addendaList.append(thing)
     return addendaList
     
-def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stash_file = False):
+def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = True, substrateRange = [0,1000]):
     # imports efficiency file into dictionary (which is returned), with primary keys as substrates, secondary keys as web IDs
     # crapSubstrateLabels = ['0','110110','GLOBAL','NA','REF01','SPECIAL NEW','SPECIAL OLD','SPECIAL']
     # effCutoff allows you to exclude data with efficiency below effCufoff
     # stash_file will save the effData dict in a pickle file so you don't have to process if the efficiency file isn't new
-    effUpToDate = False
-    effPklFile = 'effData.pkl'
-    if stash_file:
-        logFile = 'Y:/Nate/all eff data/stash/effLogFile.txt'
-        effDBFile = 'Y:/Nate/all eff data/stash/latest eff dict.pkl'
-        latestEffFileDate = time.ctime(os.path.getmtime(effFile))
-        
-        if os.path.isfile(logFile):
-            with open(logFile,'a+') as effLogFile:
-                latestDate = effLogFile.readlines()[-1]
-                if latestDate == latestEffFileDate and os.path.isfile(effPklFile):
-                    effUpToDate = True
-                    effData = pickle.load(open(effPklFile,'rb'))
-                    print 'loaded eff data from saved file'
-                else:
-                    effUpToDate = False
-                    with open(logFile,'wb') as effLogFile:
-                        effLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
-        else:
-            with open(logFile,'wb') as effLogFile:
-                effLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
     
-    if not effUpToDate:
-        colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
+    effData = {}
+    colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
         'BC Tool','BE Tool','PC Tool','Se Tool', 'Cds Tool','TCO Tool','Baked','Cell Eff Avg',
         'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg', 'BE Recipe', 
-        'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot'] 
-        # other columns you could import: 'Bake Duration','LightSoak'
-        effData = {}
+        'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot', 'Cell ID']
+    realTypes = ['DW','CW','Cell Eff Avg',
+        'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg']
+    # other columns you could import: 'Bake Duration','LightSoak'
+    
+    if stashFile:
+        effDBFile = 'Y:/Nate/all eff data/stash/effData.db'
+        effDBConn = sql.connect(effDBFile)
+        effDBConn.text_factory = str
+        cursor = effDBConn.cursor()
+        logFile = 'Y:/Nate/all eff data/stash/effLog.pkl'
+    
+    addendaList = get_addenda_eff_files()
+    
+    filesToProcess = []
+    
+    if os.path.isfile(logFile) and stashFile:
+        filesProcessed = pickle.load(open(logFile))
+        for file in (addendaList + [effFile]):
+            if file not in filesProcessed:
+                filesToProcess.append(file)
+        if len(filesToProcess) == 0:
+            startTime = datetime.datetime.now()
+            cursor.execute("SELECT * FROM effTable WHERE substrate BETWEEN {min} AND {max};".format(min = substrateRange[0], max = substrateRange[1]))
+            while True:
+                dataRow = cursor.fetchone()
+                if dataRow == None:
+                    break
+                effData.setdefault(dataRow[0],{})
+                effData[dataRow[0]].setdefault(dataRow[1],{})
+                colCounter = 2
+                for col in colsToImport:
+                    effData[dataRow[0]][dataRow[1]].setdefault(col,[]).append(dataRow[colCounter])
+                    colCounter += 1
+            print 'loaded eff data from saved file'
+            print 'took', (datetime.datetime.now()-startTime).total_seconds(), 'seconds'
+            return effData
+    else:
+        filesToProcess = addendaList + [effFile]
+
+    filesProcessed = []
+    for file in filesToProcess:
+        # import the data from csv files
         tempDataHolder = {}
         effReader = csv.DictReader(open(effFile,'rb'),delimiter =',')
         for row in effReader:
@@ -103,11 +122,44 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stash_file = Fa
                 effData[substrate].setdefault(tempDataHolder['Web ID'],{})
                 for key in colsToImport:
                     effData[substrate][tempDataHolder['Web ID']].setdefault(key,[]).append(tempDataHolder[key])
-                    
-        if stash_file:
-            pickle.dump(effData,open(effPklFile,'wb'))
+             
+        # add data to sqlite3 database
+        tableHeaders = "(\"substrate\" INTEGER, \"web ID\", "
+        for col in colsToImport:
+            if col in realTypes:
+                tableHeaders += "\"" + col + "\" REAL " + ', ' 
+            else:
+                tableHeaders += "\"" + col + "\"" + ', '  
+        tableHeaders = tableHeaders[:-2]  + ')'
+        qString = " ?,"*(len(colsToImport) + 2)
+        qString = qString[:-1] + ")"
+        for substrate in effData.keys():
+            with effDBConn:
+                effDBConn.execute("CREATE TABLE IF NOT EXISTS effTable" + tableHeaders)
+                for webID in effData[substrate].keys():
+                    for count in range(len(effData[substrate][webID]['DW'])):
+                        insertValues = [substrate, webID] + [effData[substrate][webID][col][count] for col in colsToImport]
+                        if file in addendaList:
+                            # if appending database with updated data, make sure not adding duplicate data by checking the cell ID
+                            isDuplicate = effDBConn.execute("SELECT \"Cell ID\" FROM effTable WHERE \"Cell ID\" = " + 
+                                effData[substrate][webID]['Cell ID'][count])
+                            if isDuplicate != None:
+                                effDBConn.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
+                        else:
+                            try:
+                                effDBConn.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
+                            except Exception as e:
+                                print e
+                                print insertValues
+                                raw_input('press enter to continue')
+        effDBConn.commit()
+        filesProcessed.append(file)
 
-
+    if effDBConn:
+        effDBConn.close()
+    if stashFile:
+        pickle.dump(filesProcessed, open(logFile,'wb'))
+    
     return effData
 
 def interp_to_eff(eff_data_DW,dataset_DW,dataset):
@@ -158,6 +210,13 @@ def getRunDates(stash_dates = True):
     dates = {}
     latestEffFile = getLatestEffFile()
     latestEffFileDate = time.ctime(os.path.getmtime(latestEffFile))
+    addendaFiles = get_addenda_eff_files()
+    last = 0
+    for file in addendaFiles + [latestEffFile]:
+        latest = time.ctime(os.path.getmtime(latestEffFile))
+        if latest < last:
+            last = latest
+        
     datesUpToDate = False
     if stash_dates:
         if os.path.isfile(logFile):
@@ -166,7 +225,7 @@ def getRunDates(stash_dates = True):
                 if latestDate == latestEffFileDate:
                     datesUpToDate = True
                 else:
-                    runDateLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
+                    runDateLogFile.write('latest eff file modified last:\r\n' + last)
                     datesUpToDate = False
                     print 'updating stashed date file with newest data'
         else:
