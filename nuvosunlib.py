@@ -65,7 +65,7 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
     # stash_file will save the effData dict in a pickle file so you don't have to process if the efficiency file isn't new
     
     effData = {}
-    colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
+    colsToImport = ['DateTested','DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
         'BC Tool','BE Tool','PC Tool','Se Tool', 'Cds Tool','TCO Tool','Baked','Cell Eff Avg',
         'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg', 'BE Recipe', 
         'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot', 'Cell ID']
@@ -140,10 +140,19 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
                     for count in range(len(effData[substrate][webID]['DW'])):
                         insertValues = [substrate, webID] + [effData[substrate][webID][col][count] for col in colsToImport]
                         if file in addendaList:
-                            # if appending database with updated data, make sure not adding duplicate data by checking the cell ID
-                            isDuplicate = effDBConn.execute("SELECT \"Cell ID\" FROM effTable WHERE \"Cell ID\" = " + 
-                                effData[substrate][webID]['Cell ID'][count])
-                            if isDuplicate != None:
+                            # if appending database with updated data, make sure not adding duplicate data by checking if the DateTested
+                            # is already in the database
+                            inDB = None
+                            try:
+                                inDB = effDBConn.execute("SELECT \"Cell ID\" FROM effTable WHERE \"Cell ID\" = " + 
+                                    effData[substrate][webID]['Cell ID'][count])
+                                effDBConn.execute("SELECT \"DateTested\" FROM effTable WHERE \"DateTested\" = " + 
+                                    effData[substrate][webID]['DateTested'][count])
+                            except:
+                                # if cell already in database, replace with addenda data, because it was probably retested and is now the best test
+                                if inDB != None:
+                                    effDBConn.execute("DELETE FROM effTable WHERE \"Cell ID\" = " + 
+                                    effData[substrate][webID]['Cell ID'][count])
                                 effDBConn.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
                         else:
                             try:
@@ -303,7 +312,14 @@ def getRunDates(stash_dates = True):
             
     return dates
 
-    
+def getOOWls():
+    '''
+    returns list of wavelengths for nuvosun's usb2000+ ocean optics spectrometers
+    '''
+    wlReader = csv.reader(open('Y:\Nate\code\oceanOpticsWavelengths200-900.txt','rb'), delimiter = ',')
+    wl = [float(x) for x in wlReader.next()]
+    return wl
+
 def OESparameters():
     elementList = ['Cu-325-327','Cu-515','In-451','Ga-417','Se-473','Ar-811','Na-589','Mo-380','Ti-496-522','O-777','H-656','Fi']
     colorList = ['yellow','dark yellow','orange','grey','maroon','red','black','purple','green','blue','bisque','pink']
@@ -398,13 +414,15 @@ def getRunDatesFromBEPCexcel():
             BEdateStr = BEws['A1'].value
             BEdate = re.search('\d\d\d\d\d\d',BEdateStr).group(0)
             runDates[run]['BE date'] = datetime.datetime.strptime(BEdate, '%y%m%d')
+            print run, 'BE run date', datetime.datetime.strptime(BEdate, '%y%m%d')
         except:
             runDates[run]['BE date'] = 'unknown'
         try:
             PCws = wb.get_sheet_by_name(name = 'PC')
             PCdateStr = PCws['A1'].value
             PCdate = re.search('\d\d\d\d\d\d',PCdateStr).group(0)
-            runDates[run]['PC date'] = datetime.datetime.strptime(BEdate, '%y%m%d')
+            runDates[run]['PC date'] = datetime.datetime.strptime(PCdate, '%y%m%d')
+            print run, 'PC run date', datetime.datetime.strptime(PCdate, '%y%m%d')
         except:
             runDates[run]['PC date'] = 'unknown'
         runDates[run]['tool'] = re.search('MC\d\d',file).group(0)
