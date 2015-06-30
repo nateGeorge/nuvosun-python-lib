@@ -307,8 +307,8 @@ def getRunDates(stash_dates = True):
 def OESparameters():
     elementList = ['Cu-325-327','Cu-515','In-451','Ga-417','Se-473','Ar-811','Na-589','Mo-380','Ti-496-522','O-777','H-656','Fi']
     colorList = ['yellow','dark yellow','orange','grey','maroon','red','black','purple','green','blue','bisque','pink']
-    OESminList = [321.0, 513.0, 449.0, 414.0, 470.0, 808.0, 587.0, 378.0, 496.0, 775.0, 654.0,189.77481] #wavelength minimums for OES integration
-    OESmaxList = [330.0, 517.0, 453.0, 418.0, 475.0, 811.0, 589.0, 382.0, 522.0, 779.0, 658.0,890.3067897] #wavelength maxs
+    OESminList = [321.0, 513.0, 449.0, 414.0, 470.0, 808.0, 587.0, 378.0, 496.0, 775.0, 654.0, 189.77481] #wavelength minimums for OES integration
+    OESmaxList = [330.0, 517.0, 453.0, 418.0, 475.0, 815.0, 589.0, 382.0, 522.0, 779.0, 658.0, 890.3067897] #wavelength maxs
 
 
     wlReader = csv.reader(open('Y:\Nate\code\oceanOpticsWavelengths200-900.txt','rb'), delimiter = ',')
@@ -351,7 +351,68 @@ def get_memory_use():
     w = WMI('.')
     result = w.query("SELECT WorkingSet FROM Win32_PerfRawData_PerfProc_Process WHERE IDProcess=%d" % os.getpid())
     return result#['WorkingSet'])
-   
+
+def get_BEPC_excelFiles(runCutoff = 285, lastRun = 500):
+    '''
+    Returns a list of the full paths to all BE/PC excel files.
+
+    :param: runCutoff : the earliest run to start scanning for
+    :param: lastRun : the last run to scan for
+    '''
+    excelFiles = []
+    basepath = 'Y:\\Experiment Summaries\\Year 20'
+    years = [13,14,15,16,17]
+    runs = range(runCutoff, lastRun)
+    for eachRun in runs:
+        eachRun = str(eachRun)
+        print 'searching for PC excel file for', eachRun
+        for year in years:
+            runStr = str(eachRun).rjust(5,'0')
+            runPath = basepath + str(year) + '\\' + 'S' + runStr + '\\'
+            if os.path.exists(runPath):
+                foundFile = False
+                for f in glob.iglob(runPath + '*S*' + eachRun + '*' + 'MC0[1,2]' + '*xlsx'):
+                    if re.search('not complete', f) or re.search('copy', f, re.IGNORECASE) or re.search('~', f) or foundFile:
+                        print 'skipping file:'
+                        print f
+                        continue
+                    excelFiles.append(f)
+                    foundFile = True
+
+    return excelFiles
+    
+def getRunDatesFromBEPCexcel():
+    '''
+    Returns a dictionary of runNumber:[BERunDate,PCRunDate]
+    '''
+    runDates = {}
+    excelFiles = get_BEPC_excelFiles()
+    for file in excelFiles:
+        run = re.search('S00(\d\d\d)',file).group(1)
+        runDates[run] = {}
+        print file
+        print run
+        wb = load_workbook(filename = file, use_iterators=True, data_only=True)
+        try:
+            BEws = wb.get_sheet_by_name(name = 'BE')
+            BEdateStr = BEws['A1'].value
+            BEdate = re.search('\d\d\d\d\d\d',BEdateStr).group(0)
+            runDates[run]['BE date'] = datetime.datetime.strptime(BEdate, '%y%m%d')
+        except:
+            runDates[run]['BE date'] = 'unknown'
+        try:
+            PCws = wb.get_sheet_by_name(name = 'PC')
+            PCdateStr = PCws['A1'].value
+            PCdate = re.search('\d\d\d\d\d\d',PCdateStr).group(0)
+            runDates[run]['PC date'] = datetime.datetime.strptime(BEdate, '%y%m%d')
+        except:
+            runDates[run]['PC date'] = 'unknown'
+        runDates[run]['tool'] = re.search('MC\d\d',file).group(0)
+        
+    
+    return runDates
+        
+
 def get_XRF_data(runs):
     ##################get all the XRF data of an array of run numbers, runs
     XRFsheetNames = ["MC01 XRF", "MC02 XRF", "XRF"]
@@ -361,27 +422,29 @@ def get_XRF_data(runs):
     runsWithNoXRFfile = []
     tempXRFdata = {}# to use to get raw data, interp to get full data
     basepath = 'Y:\\Experiment Summaries\\Year 20'
-    years = [13,14,15,16]
+    years = [13,14,15,16,17]
     for eachRun in runs:
         eachRun = str(eachRun)
         noXRFfile = True
         print 'searching for XRF file for', eachRun
         for year in years:
-            runPath = basepath + str(year) + '\\' + 'S' + str(eachRun) + '\\'
-            print runPath
+            runStr = str(eachRun).rjust(5,'0')
+            runPath = basepath + str(year) + '\\' + 'S' + runStr + '\\'
             if os.path.exists(runPath):
                 #print runPath
                 
-                for f in glob.iglob(runPath + '*S*' + str(eachRun) + '*' + 'MC0[1,2]' + '*xlsx'): #used to have MC tool in there too...
-                    print f
-                    if re.search('not complete', f) or re.search('copy', f, re.IGNORECASE):
-                        print 'skipping file'
+                for f in glob.iglob(runPath + '*S*' + eachRun + '*' + 'MC0[1,2]' + '*xlsx'): #used to have MC tool in there too...
+                    if re.search('not complete', f) or re.search('copy', f, re.IGNORECASE) or re.search('~', f):
+                        print 'skipping file:'
+                        print f
                         continue
                     if eachRun == '426':
                         newFormat = True
                     else:
                         newFormat = False
-                    if noXRFfile: # to make sure we only get one XRF file
+                    if not noXRFfile: # to make sure we only get one XRF file
+                        break
+                    else:
                         noXRFfile = False
                         
                         xrfFile = f
@@ -473,6 +536,7 @@ def get_XRF_data(runs):
                 
         if not noXRFfile: #if found the XRF file
             print 'found xrf file for run ', eachRun
+            print xrfFile
             for key in keysToInterp:
                 tempXRFdata[eachRun][key]=np.array(tempXRFdata[eachRun][key],dtype='float64')
                 XRFdata[eachRun][key]=np.interp(XRFdata[eachRun]['DW'],tempXRFdata[eachRun][key][:,1],tempXRFdata[eachRun][key][:,0])
