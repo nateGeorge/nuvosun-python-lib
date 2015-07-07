@@ -4,6 +4,7 @@ import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util,
 import sqlite3 as sql
 import numpy as np
 from dateutil.parser import parse as dateParser
+from operator import itemgetter
 
 def getReliRunsDict():
     # gets a dictionary of good/bad reliability runs for SC
@@ -65,10 +66,10 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
     # stash_file will save the effData dict in a pickle file so you don't have to process if the efficiency file isn't new
     
     effData = {}
-    colsToImport = ['DateTested','DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
-        'BC Tool','BE Tool','PC Tool','Se Tool', 'Cds Tool','TCO Tool','Baked','Cell Eff Avg',
+    colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
+        'PC Tool','Baked','Cell Eff Avg',
         'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg', 'BE Recipe', 
-        'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot', 'Cell ID']
+        'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot', 'Cell ID'] # 'BC Tool','BE Tool','DateTested','Se Tool', 'Cds Tool','TCO Tool',
     realTypes = ['DW','CW','Cell Eff Avg',
         'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg']
     # other columns you could import: 'Bake Duration','LightSoak'
@@ -83,13 +84,16 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
     addendaList = get_addenda_eff_files()
     
     filesToProcess = []
+    filesProcessed = []
     
     if os.path.isfile(logFile) and stashFile:
         filesProcessed = pickle.load(open(logFile))
         for file in (addendaList + [effFile]):
             if file not in filesProcessed:
+                print 'haven\'t processed', file
                 filesToProcess.append(file)
         if len(filesToProcess) == 0:
+            print 'loading data from saved db'
             startTime = datetime.datetime.now()
             cursor.execute("SELECT * FROM effTable WHERE substrate BETWEEN {min} AND {max};".format(min = substrateRange[0], max = substrateRange[1]))
             while True:
@@ -107,17 +111,23 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
             return effData
     else:
         filesToProcess = addendaList + [effFile]
-
-    filesProcessed = []
+    
     for file in filesToProcess:
+        print 'processing file:', file
         # import the data from csv files
         tempDataHolder = {}
-        effReader = csv.DictReader(open(effFile,'rb'),delimiter =',')
+        effReader = csv.DictReader(open(file,'rb'),delimiter =',')
         for row in effReader:
             for column,value in row.iteritems():
                 tempDataHolder[column] = value
             if re.search('S\d\d\d\d\d',tempDataHolder['Substrate ID']): # filter out any junk data with no substrate ID or data entry mistakes
                 substrate = tempDataHolder['Substrate ID'][1:]
+                try:
+                    if int(substrate)<285:
+                        #skip lower substrate numbers for now because running into memoryError
+                        continue  
+                except:
+                    continue
                 effData.setdefault(substrate,{})
                 effData[substrate].setdefault(tempDataHolder['Web ID'],{})
                 for key in colsToImport:
@@ -146,8 +156,8 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
                             try:
                                 inDB = effDBConn.execute("SELECT \"Cell ID\" FROM effTable WHERE \"Cell ID\" = " + 
                                     effData[substrate][webID]['Cell ID'][count])
-                                effDBConn.execute("SELECT \"DateTested\" FROM effTable WHERE \"DateTested\" = " + 
-                                    effData[substrate][webID]['DateTested'][count])
+                                effDBConn.execute("SELECT \"Cell Eff Avg\" FROM effTable WHERE \"Cell Eff Avg\" = " + 
+                                    effData[substrate][webID]['Cell Eff Avg'][count])
                             except:
                                 # if cell already in database, replace with addenda data, because it was probably retested and is now the best test
                                 if inDB != None:
@@ -167,10 +177,46 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
     if effDBConn:
         effDBConn.close()
     if stashFile:
+        print 'files processed:',filesProcessed
         pickle.dump(filesProcessed, open(logFile,'wb'))
     
     return effData
 
+def effData_by_substrate(effData = None):
+    '''
+    Returns a dict of efficiency data with substrate numbers as keys.
+    
+    :param: effData : dictionary of efficiency data with substrate numbers as primary keys and webIds as secondary keys.
+    '''
+    if effData == None:
+        effData = import_eff_file()
+    effDataSubs = {}
+    firstRun = effData.keys()[0]
+    firstWebID = effData[firstRun].keys()[0]
+    effKeys = sorted(effData[firstRun][firstWebID].keys())
+    keyCount = 0
+    for key in effKeys:
+        if key == 'DW':
+            dwCount = keyCount + 1 # find the position of DW in effKeys and add one because the first element of the tempEffData list is webID
+            break
+        keyCount += 1
+        
+    for run in sorted(effData.keys()):
+        tempEffData = []
+        effDataSubs.setdefault(run,{})
+        for webID in sorted(effData[run].keys()):
+            for count in range(len(effData[run][webID]['DW'])):
+                tempEffData.append([webID] + [effData[run][webID][key][count] for key in effKeys])
+        tempEffData = sorted(tempEffData, key = lambda data : data[dwCount])
+        for count in range(len(tempEffData)):
+            effDataSubs[run].setdefault('webID',[]).append(tempEffData[count][0])
+            keyCount = 1
+            for key in effKeys:
+                effDataSubs[run].setdefault(key,[]).append(tempEffData[count][keyCount])
+                keyCount+=1
+                
+    return effDataSubs
+    
 def interp_to_eff(eff_data_DW,dataset_DW,dataset):
     min_effdw=min(eff_data_DW)
     max_effdw=max(eff_data_DW)
@@ -204,7 +250,7 @@ def getLatestScheduleFile():
     fileCounter = 0
     while not schedFile:
         fileCounter -= 1
-        if re.search('Daily', sortedSchedFiles[fileCounter]):
+        if re.search('Daily', sortedSchedFiles[fileCounter]) and not re.search('\$', sortedSchedFiles[fileCounter]) and not re.search('~', sortedSchedFiles[fileCounter]):
             latestSchedFile = sortedSchedFiles[fileCounter]
             schedFile = True
             print 'latest schedule file found: ', latestSchedFile
@@ -320,9 +366,14 @@ def getOOWls():
     wl = [float(x) for x in wlReader.next()]
     return wl
 
-def OESparameters():
+def OESparameters(normalizations = False):
+    '''
+    Returns a dict with elements as keys and colors, min/max wavelengths.
+    
+    :param: normalizations : boolean, whether to return normalization keys (/Fi, /Ar-811, /Fi/Ar-811)
+    '''
     elementList = ['Cu-325-327','Cu-515','In-451','Ga-417','Se-473','Ar-811','Na-589','Mo-380','Ti-496-522','O-777','H-656','Fi']
-    colorList = ['yellow','dark yellow','orange','grey','maroon','red','black','purple','green','blue','bisque','pink']
+    colorList = ['yellow','dark yellow','orange','grey','maroon','red','lightcoral','purple','green','blue','bisque','pink']
     OESminList = [321.0, 513.0, 449.0, 414.0, 470.0, 808.0, 587.0, 378.0, 496.0, 775.0, 654.0, 189.77481] #wavelength minimums for OES integration
     OESmaxList = [330.0, 517.0, 453.0, 418.0, 475.0, 815.0, 589.0, 382.0, 522.0, 779.0, 658.0, 890.3067897] #wavelength maxs
 
@@ -338,7 +389,24 @@ def OESparameters():
         elementDict[elementList[elementCount]]['maxWL'] = OESmaxList[elementCount]
         elementDict[elementList[elementCount]]['minWLindex'],elementDict[elementList[elementCount]]['maxWLindex'] = get_WL_indices(OESminList[elementCount], OESmaxList[elementCount], wl)
     
-    return elementDict
+    # array of keys for normalization of data, used in normalizedData dict
+    keysToAdd = [key + '/Fi' for key in elementDict.keys()] + [key + '/Ar-811' for key in elementDict.keys()] + [
+        key + '/(Fi*Ar-811)' for key in elementDict.keys()]
+    removeKeys = ['Fi/Fi','Ar-811/Ar-811','Fi/Ar-811','Fi/(Fi*Ar-811)','Ar-811/(Fi*Ar-811)']
+    for key in removeKeys:
+        keysToAdd.remove(key)
+    
+    if normalizations:
+        # array of keys for normalization of data, used in normalizedData dict
+        normalizationKeys = [key + '/Fi' for key in elementDict.keys()] + [key + '/Ar-811' for key in elementDict.keys()] + [
+            key + '/(Fi*Ar-811)' for key in elementDict.keys()]
+        removeKeys = ['Fi/Fi','Ar-811/Ar-811','Fi/Ar-811','Fi/(Fi*Ar-811)','Ar-811/(Fi*Ar-811)']
+        for key in removeKeys:
+            normalizationKeys.remove(key)
+        
+        return elementDict, normalizationKeys
+    else:
+        return elementDict
     
 def get_WL_indices(minWL,maxWL,wl):
     #returns the indices of the wl list where the min and max wavelengths are, supplied as minWL and maxWL
