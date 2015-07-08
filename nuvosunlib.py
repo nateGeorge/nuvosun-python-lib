@@ -536,7 +536,9 @@ def get_XRF_data(runs):
                         xrfFile = f
 
                         wb = load_workbook(filename = xrfFile, use_iterators=True, data_only=True)  
-
+                        PCwb = wb.get_sheet_by_name(name = 'Web Movement Procedure PC')
+                        maxDW = float(PCwb['C6'].value)
+                        print 'max DW:',maxDW
                         foundSheet = False
                         for sheetName in XRFsheetNames:
                             try:
@@ -592,9 +594,8 @@ def get_XRF_data(runs):
                                     #labels=[row[2].value,row[3].value,row[3].value,row[10].value.encode('utf-8')]
                                     rowcounter+=1
                                     pass
-                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=0 and row[dwRow].value<=600.0 and float(row[dwRow].value)!=-5.57:
+                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=0 and row[dwRow].value<=maxDW and float(row[dwRow].value)!=-5.57:
                                 # -5.57 shows up in 389 when two rows are missing in 'web length' column # this used to be in there too: and row[dwRow].value<=allrundata[eachRun][1]
-                                # 600m is the longest run we've done so far, will need to update in the future
                                     if row[dtRow].value!=None:
                                         if type(row[dtRow].value) != datetime.datetime:
                                             try:
