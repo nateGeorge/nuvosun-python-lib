@@ -519,7 +519,7 @@ def get_XRF_data(runs):
             if os.path.exists(runPath):
                 #print runPath
                 
-                for f in glob.iglob(runPath + '*S*' + eachRun + '*' + 'MC0[1,2]' + '*xlsx'): #used to have MC tool in there too...
+                for f in glob.iglob(runPath + '*S*' + eachRun + '*' + 'MC0[1,2]' + '*xlsx'):
                     if re.search('not complete', f) or re.search('copy', f, re.IGNORECASE) or re.search('~', f):
                         print 'skipping file:'
                         print f
@@ -592,7 +592,9 @@ def get_XRF_data(runs):
                                     #labels=[row[2].value,row[3].value,row[3].value,row[10].value.encode('utf-8')]
                                     rowcounter+=1
                                     pass
-                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=0 and float(row[dwRow].value)!=-5.57:#-5.57 shows up in 389 when two rows are missing in 'web length' column # this used to be in there too: and row[dwRow].value<=allrundata[eachRun][1]
+                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=0 and row[dwRow].value<=600.0 and float(row[dwRow].value)!=-5.57:
+                                # -5.57 shows up in 389 when two rows are missing in 'web length' column # this used to be in there too: and row[dwRow].value<=allrundata[eachRun][1]
+                                # 600m is the longest run we've done so far, will need to update in the future
                                     if row[dtRow].value!=None:
                                         if type(row[dtRow].value) != datetime.datetime:
                                             try:
