@@ -648,7 +648,7 @@ def get_XRF_data(runs, minDW = 0):
             
     return XRFdata
     
-def get_saved_runsInDBList():
+def get_saved_runsInOESDBList():
     '''Returns a dict of runs already in the database and a dict of their dates.
     '''
     upToDate = False
@@ -667,7 +667,7 @@ def get_saved_runsInDBList():
                 print 'using stashed files for list of OES files in DB'
     return upToDate, lastOESdbMtime, runsInDB, runDatesInDB
     
-def set_saved_runsInDBList(runsInDB, runDatesInDB):
+def set_saved_runsOESInDBList(runsInDB, runDatesInDB):
     '''Returns nothing, saves pickle files of runs and run dates already in the OES database.
     
     :param: runsInDB: list of runs that have been entered in the database.
