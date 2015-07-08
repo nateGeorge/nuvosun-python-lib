@@ -6,6 +6,10 @@ import numpy as np
 from dateutil.parser import parse as dateParser
 from operator import itemgetter
 
+OESmtimeFile = 'Y:/Nate/OES/records/OESmtime.pkl'
+runsInDBFile = 'Y:/Nate/OES/records/runsInDB.pkl'
+runDatesInDBFile = 'Y:/Nate/OES/records/runDatesInDB.pkl'
+
 def getReliRunsDict():
     # gets a dictionary of good/bad reliability runs for SC
     goodReliRuns = ['286', '307', '328', '379', '394', '405', '408']
@@ -643,3 +647,33 @@ def get_XRF_data(runs, minDW = 0):
             runsWithNoXRFfile.append(eachRun)
             
     return XRFdata
+    
+def get_saved_runsInDBList():
+    '''Returns a dict of runs already in the database and a dict of their dates.
+    '''
+    upToDate = False
+    runsInDB = []
+    runDatesInDB = []
+    lastOESdbMtime = None
+    if os.path.isfile(OESmtimeFile) and os.path.isfile(OESdbFile):
+        lastOESdbMtime = os.path.getmtime(OESdbFile)
+        lastLoggedTime = pickle.load(open(OESmtimeFile))
+        print '########OESDBmtimes: ', lastLoggedTime, lastOESdbMtime
+        if lastLoggedTime == lastOESdbMtime:
+            if os.path.isfile(runsInDBFile) and os.path.isfile(runDatesInDBFile):
+                runsInDB = pickle.load(open(runsInDBFile))
+                runDatesInDB = pickle.load(open(runDatesInDBFile))
+                upToDate = True
+                print 'using stashed files for list of OES files in DB'
+    return upToDate, lastOESdbMtime, runsInDB, runDatesInDB
+    
+def set_saved_runsInDBList(runsInDB, runDatesInDB):
+    '''Returns nothing, saves pickle files of runs and run dates already in the OES database.
+    
+    :param: runsInDB: list of runs that have been entered in the database.
+    :param: runDateLogFile: list of run dates that have been entered in database (folders with data are labeled by date, not run)
+    '''
+    pickle.dump(os.path.getmtime(OESdbFile), open(OESmtimeFile, 'wb'))
+    pickle.dump(runsInDB, open(runsInDBFile, 'wb'))
+    pickle.dump(runDatesInDB, open(runDatesInDBFile, 'wb'))
+    return
