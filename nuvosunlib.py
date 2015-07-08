@@ -499,8 +499,12 @@ def getRunDatesFromBEPCexcel():
     return runDates
         
 
-def get_XRF_data(runs):
-    ##################get all the XRF data of an array of run numbers, runs
+def get_XRF_data(runs, minDW = 0):
+    '''Returns a dictionary (keys = run numbers) of dictionaries (keys = xrf parameters) by scraping all the excel files.
+    
+    :param: runs: array of run numbers to be used e.g. [399,400]
+    :param: minDW: minimum DW cutoff for grabbing XRF data
+    '''
     XRFsheetNames = ["MC01 XRF", "MC02 XRF", "XRF"]
     keys = ['DT','Cu','Ga','Mo','Se','Thickness','In','DW','Cu3','In3','Ga3']
     keysToInterp = ['DT','Cu','Ga','Mo','Se','Thickness','In']
@@ -594,7 +598,7 @@ def get_XRF_data(runs):
                                     #labels=[row[2].value,row[3].value,row[3].value,row[10].value.encode('utf-8')]
                                     rowcounter+=1
                                     pass
-                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=0 and row[dwRow].value<=maxDW and float(row[dwRow].value)!=-5.57:
+                                elif rowcounter == 1 and row[dwRow].value!= '' and row[dwRow].value!= None and row[dwRow].value>=minDW and row[dwRow].value<=maxDW and float(row[dwRow].value)!=-5.57:
                                 # -5.57 shows up in 389 when two rows are missing in 'web length' column # this used to be in there too: and row[dwRow].value<=allrundata[eachRun][1]
                                     if row[dtRow].value!=None:
                                         if type(row[dtRow].value) != datetime.datetime:
