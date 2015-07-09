@@ -377,9 +377,7 @@ def OESparameters(normalizations = False):
     OESminList = [321.0, 513.0, 449.0, 414.0, 470.0, 808.0, 587.0, 378.0, 496.0, 775.0, 654.0, 189.77481] #wavelength minimums for OES integration
     OESmaxList = [330.0, 517.0, 453.0, 418.0, 475.0, 815.0, 589.0, 382.0, 522.0, 779.0, 658.0, 890.3067897] #wavelength maxs
 
-
-    wlReader = csv.reader(open('Y:\Nate\code\oceanOpticsWavelengths200-900.txt','rb'), delimiter = ',')
-    wl = [float(x) for x in wlReader.next()]
+    wl = getOOWls()
 
     elementDict = {}
     for elementCount in range(len(elementList)):
