@@ -6,10 +6,6 @@ import numpy as np
 from dateutil.parser import parse as dateParser
 from operator import itemgetter
 
-OESmtimeFile = 'Y:/Nate/OES/records/OESmtime.pkl'
-runsInDBFile = 'Y:/Nate/OES/records/runsInDB.pkl'
-runDatesInDBFile = 'Y:/Nate/OES/records/runDatesInDB.pkl'
-
 def getReliRunsDict():
     # gets a dictionary of good/bad reliability runs for SC
     goodReliRuns = ['286', '307', '328', '379', '394', '405', '408']
@@ -667,13 +663,100 @@ def get_saved_runsInOESDBList():
                 print 'using stashed files for list of OES files in DB'
     return upToDate, lastOESdbMtime, runsInDB, runDatesInDB
     
-def set_saved_runsOESInDBList(runsInDB, runDatesInDB):
+def set_saved_runsInOESDBList(runsInDB, runDatesInDB):
     '''Returns nothing, saves pickle files of runs and run dates already in the OES database.
     
     :param: runsInDB: list of runs that have been entered in the database.
     :param: runDateLogFile: list of run dates that have been entered in database (folders with data are labeled by date, not run)
     '''
+    OESmtimeFile = 'Y:/Nate/OES/records/OESmtime.pkl'
+    runsInDBFile = 'Y:/Nate/OES/records/runsInDB.pkl'
+    runDatesInDBFile = 'Y:/Nate/OES/records/runDatesInDB.pkl'
+    OESdbFile = 'Y:/Nate/OES/databases/all OES data.csv'
     pickle.dump(os.path.getmtime(OESdbFile), open(OESmtimeFile, 'wb'))
     pickle.dump(runsInDB, open(runsInDBFile, 'wb'))
     pickle.dump(runDatesInDB, open(runDatesInDBFile, 'wb'))
+    return
+    
+def get_saved_runsInprocessedOESDBList():
+    '''Returns two booleans that tell if the processed data is up to date with the raw data database,
+    and dicts of PC BE runs already in the processed databases.
+    
+    '''
+    writtenPCrunsFile = 'Y:/Nate/OES/records/processed_OESPCruns.pkl'
+    writtenBErunsFile = 'Y:/Nate/OES/records/processed_OESBEruns.pkl'
+    if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile):
+        with open(writtenPCrunsFile) as PCfile:
+            writtenPCruns = pickle.load(PCfile)
+        with open(writtenBErunsFile) as BEfile:
+            writtenBEruns = pickle.load(BEfile)
+    else:
+        writtenPCruns = []
+        writtenBEruns = []
+    
+    processedPCUpToDate = True
+    processedBEUpToDate = True
+    processed_OESmtimeFile = 'Y:/Nate/OES/records/PROCESSED_OESmtime.pkl'
+    processed_runsInDBFile = 'Y:/Nate/OES/records/PROCESSED_runsInDB.pkl'
+    processed_runDatesInDBFile = 'Y:/Nate/OES/records/PROCESSED_runDatesInDB.pkl'
+    upToDate = False
+    runsInDB = []
+    runDatesInDB = []
+    lastOESdbMtime = None
+    if os.path.isfile(processed_OESmtimeFile) and os.path.isfile(processed_OESdbFile):
+        lastOESdbMtime = os.path.getmtime(processed_OESdbFile)
+        lastLoggedTime = pickle.load(open(processed_OESmtimeFile))
+        print '########processed_OESDBmtimes: ', lastLoggedTime, lastOESdbMtime
+        if lastLoggedTime == lastOESdbMtime:
+            if os.path.isfile(processed_runsInDBFile) and os.path.isfile(processed_runDatesInDBFile):
+                runsInDB = pickle.load(open(processed_runsInDBFile))
+                runDatesInDB = pickle.load(open(processed_runDatesInDBFile))
+                upToDate = True
+                print 'using stashed files for list of OES files in DB'
+    
+    for run in writtenBEruns:
+        if run in runsInDB:
+            pass
+        else:
+            processedBEUpToDate = False
+    if writtenBEruns == []:
+        processedBEUpToDate = False
+    for run in writtenPCruns:
+        if run in runsInDB:
+            pass
+        else:
+            processedPCUpToDate = False
+    if writtenPCruns == []:
+        processedPCUpToDate = False
+    
+    return processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns
+    
+def set_saved_runsInprocessedOESDBList(PCruns, BEruns):
+    '''Returns nothing, saves pickle files of runs and run dates already in the processed OES database.
+    
+    :param: PCruns: list of PC runs that have been entered in the PROCESSED OES database.
+    :param: BEruns: list of BE runs that have been entered in the PROCESSED OES database.
+    '''
+    writtenPCrunsFile = 'Y:/Nate/OES/records/processed_OESPCruns.pkl'
+    writtenBErunsFile = 'Y:/Nate/OES/records/processed_OESBEruns.pkl'
+    if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile):
+        with open(writtenPCrunsFile) as PCfile:
+            writtenPCruns = pickle.load(PCfile)
+        with open(writtenBErunsFile) as BEfile:
+            writtenBEruns = pickle.load(BEfile)
+    else:
+        writtenPCruns = []
+        writtenBEruns = []
+    
+    with open(writtenPCrunsFile,'wb') as PCfile:
+    if writtenPCruns in globals():
+        pickle.dump(PCruns + writtenPCruns, writtenPCrunsFile)
+    else:
+        pickle.dump(PCruns, writtenPCrunsfile)
+    with open(writtenBErunsFile,'wb') as BEfile:
+        if writtenBEruns in globals():
+            pickle.dump(BEruns + writtenBEruns, writtenBErunsFile)
+        else:
+            pickle.dump(BEruns, writtenBErunsFile)
+
     return
