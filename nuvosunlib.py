@@ -67,7 +67,7 @@ def get_addenda_eff_files():
 def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = True, substrateRange = [0,1000]):
     # imports efficiency file into dictionary (which is returned), with primary keys as substrates, secondary keys as web IDs
     # crapSubstrateLabels = ['0','110110','GLOBAL','NA','REF01','SPECIAL NEW','SPECIAL OLD','SPECIAL']
-    # effCutoff allows you to exclude data with efficiency below effCufoff
+    # effCutoff allows you to exclude data with efficiency below effCutoff
     # stash_file will save the effData dict in a pickle file so you don't have to process if the efficiency file isn't new
     
     effData = {}
@@ -100,7 +100,7 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
         if len(filesToProcess) == 0:
             print 'loading data from saved db'
             startTime = datetime.datetime.now()
-            cursor.execute("SELECT * FROM effTable WHERE substrate BETWEEN {min} AND {max};".format(min = substrateRange[0], max = substrateRange[1]))
+            cursor.execute("SELECT * FROM effTable WHERE substrate BETWEEN {min} AND {max} AND \"Cell Eff Avg\" > {effCut};".format(min = substrateRange[0], max = substrateRange[1], effCut = effCutoff))
             while True:
                 dataRow = cursor.fetchone()
                 if dataRow == None:
