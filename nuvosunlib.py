@@ -1,3 +1,8 @@
+'''
+to do:
+save XRF data in a stashed file
+'''
+
 from openpyxl import load_workbook
 from scipy.integrate import simps
 import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util, glob, pickle
@@ -683,20 +688,25 @@ def get_saved_runsInprocessedOESDBList():
     '''
     writtenPCrunsFile = 'Y:/Nate/OES/records/processed_OESPCruns.pkl'
     writtenBErunsFile = 'Y:/Nate/OES/records/processed_OESBEruns.pkl'
-    if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile):
+    OESDTDWFile = 'Y:/Nate/OES/records/processed_OESDTDW.pkl'
+    if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile) and os.path.isfile(OESDTDWFile):
         with open(writtenPCrunsFile) as PCfile:
             writtenPCruns = pickle.load(PCfile)
         with open(writtenBErunsFile) as BEfile:
             writtenBEruns = pickle.load(BEfile)
+        with open(OESDTDWFile) as dtfile:
+            OESDTDW = pickle.load(dtfile)
     else:
         writtenPCruns = []
         writtenBEruns = []
+        OESDTDW = None
     
     processedPCUpToDate = True
     processedBEUpToDate = True
     processed_OESmtimeFile = 'Y:/Nate/OES/records/PROCESSED_OESmtime.pkl'
     processed_runsInDBFile = 'Y:/Nate/OES/records/PROCESSED_runsInDB.pkl'
     processed_runDatesInDBFile = 'Y:/Nate/OES/records/PROCESSED_runDatesInDB.pkl'
+    
     upToDate = False
     runsInDB = []
     runDatesInDB = []
@@ -727,9 +737,9 @@ def get_saved_runsInprocessedOESDBList():
     if writtenPCruns == []:
         processedPCUpToDate = False
     
-    return processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns
+    return processedPCUpToDate, processedBEUpToDate, writtenPCruns, writtenBEruns, OESDTDW
     
-def set_saved_runsInprocessedOESDBList(PCruns, BEruns):
+def set_saved_runsInprocessedOESDBList(PCruns, BEruns, OESDTDW):
     '''Returns nothing, saves pickle files of runs and run dates already in the processed OES database.
     
     :param: PCruns: list of PC runs that have been entered in the PROCESSED OES database.
@@ -737,6 +747,7 @@ def set_saved_runsInprocessedOESDBList(PCruns, BEruns):
     '''
     writtenPCrunsFile = 'Y:/Nate/OES/records/processed_OESPCruns.pkl'
     writtenBErunsFile = 'Y:/Nate/OES/records/processed_OESBEruns.pkl'
+    OESDTDWFile = 'Y:/Nate/OES/records/processed_OESDTDW.pkl'
     if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile):
         with open(writtenPCrunsFile) as PCfile:
             writtenPCruns = pickle.load(PCfile)
@@ -756,5 +767,7 @@ def set_saved_runsInprocessedOESDBList(PCruns, BEruns):
             pickle.dump(BEruns + writtenBEruns, BEfile)
         except NameError:
             pickle.dump(BEruns, BEfile)
+    with open(OESDTDWFile, 'wb') as dwfile:
+        pickle.dump(OESDTDW, dwfile)
 
     return
