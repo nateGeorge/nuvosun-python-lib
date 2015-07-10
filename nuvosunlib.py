@@ -198,6 +198,7 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
         print 'files processed:',filesProcessed
         pickle.dump(filesProcessed, open(logFile,'wb'))
     
+    effData = {}
     print 'loading data from saved db'
     startTime = datetime.datetime.now()
     cursor.execute("SELECT * FROM effTable WHERE substrate BETWEEN {min} AND {max} AND \"Cell Eff Avg\" > {effCut};".format(min = substrateRange[0], max = substrateRange[1], effCut = effCutoff))
