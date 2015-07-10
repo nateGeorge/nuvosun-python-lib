@@ -748,13 +748,13 @@ def set_saved_runsInprocessedOESDBList(PCruns, BEruns):
     
     with open(writtenPCrunsFile,'wb') as PCfile:
         if writtenPCruns in globals():
-            pickle.dump(PCruns + writtenPCruns, writtenPCrunsFile)
+            pickle.dump(PCruns + writtenPCruns, PCfile)
         else:
-            pickle.dump(PCruns, writtenPCrunsfile)
+            pickle.dump(PCruns, PCfile)
     with open(writtenBErunsFile,'wb') as BEfile:
         if writtenBEruns in globals():
-            pickle.dump(BEruns + writtenBEruns, writtenBErunsFile)
+            pickle.dump(BEruns + writtenBEruns, BEfile)
         else:
-            pickle.dump(BEruns, writtenBErunsFile)
+            pickle.dump(BEruns, BEfile)
 
     return
