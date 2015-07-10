@@ -149,36 +149,49 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
         qString = " ?,"*(len(colsToImport) + 2)
         qString = qString[:-1] + ")"
         for substrate in effData.keys():
-            with effDBConn:
-                effDBConn.execute("CREATE TABLE IF NOT EXISTS effTable" + tableHeaders)
-                for webID in effData[substrate].keys():
-                    for count in range(len(effData[substrate][webID]['DW'])):
-                        insertValues = [substrate, webID] + [effData[substrate][webID][col][count] for col in colsToImport]
-                        if file in addendaList:
-                            # if appending database with updated data, make sure not adding duplicate data by checking if the DateTested
-                            # is already in the database
-                            inDB = None
-                            try:
-                                inDB = effDBConn.execute("SELECT \"Cell ID\" FROM effTable WHERE \"Cell ID\" = " + 
-                                    effData[substrate][webID]['Cell ID'][count])
-                                effDBConn.execute("SELECT \"Cell Eff Avg\" FROM effTable WHERE \"Cell Eff Avg\" = " + 
-                                    effData[substrate][webID]['Cell Eff Avg'][count])
-                            except:
-                                # if cell already in database, replace with addenda data, because it was probably retested and is now the best test
-                                if inDB != None:
-                                    effDBConn.execute("DELETE FROM effTable WHERE \"Cell ID\" = " + 
-                                    effData[substrate][webID]['Cell ID'][count])
-                                effDBConn.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
-                        else:
-                            try:
-                                effDBConn.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
-                            except Exception as e:
-                                print e
-                                print insertValues
-                                raw_input('press enter to continue')
+            cursor.execute("CREATE TABLE IF NOT EXISTS effTable" + tableHeaders)
+            for webID in effData[substrate].keys():
+                for count in range(len(effData[substrate][webID]['DW'])):
+                    insertValues = [substrate, webID] + [effData[substrate][webID][col][count] for col in colsToImport]
+                    if file in addendaList:
+                        # if appending database with updated data, make sure not adding duplicate data by checking if the DateTested
+                        # is already in the database
+                        inDB = None
+                        try:
+                            inDB = cursor.execute("SELECT \"Cell ID\" FROM effTable WHERE \"Cell ID\" = " + 
+                                effData[substrate][webID]['Cell ID'][count])
+                            cursor.execute("SELECT \"Cell Eff Avg\" FROM effTable WHERE \"Cell Eff Avg\" = " + 
+                                effData[substrate][webID]['Cell Eff Avg'][count])
+                        except:
+                            # if cell already in database, replace with addenda data, because it was probably retested and is now the best test
+                            if inDB != None:
+                                cursor.execute("DELETE FROM effTable WHERE \"Cell ID\" = " + 
+                                effData[substrate][webID]['Cell ID'][count])
+                            cursor.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
+                    else:
+                        try:
+                            cursor.execute("INSERT INTO effTable VALUES(" + qString, insertValues)
+                        except Exception as e:
+                            print e
+                            print insertValues
+                            raw_input('press enter to continue')
         effDBConn.commit()
         filesProcessed.append(file)
 
+    # re-sort database by substrate and DW if we just added new data
+    if len(filesToProcess) > 0:
+        tableLabels = "(\"substrate\", \"web ID\", "
+        for col in colsToImport:
+            if col in realTypes:
+                tableLabels += "\"" + col + "\"" + ', ' 
+            else:
+                tableLabels += "\"" + col + "\"" + ', '  
+        tableLabels = tableLabels[:-2]  + ')'
+        cursor.execute("CREATE TABLE IF NOT EXISTS temp_effTable" + tableHeaders)
+        cursor.execute("INSERT INTO temp_effTable %s SELECT * FROM effTable ORDER BY substrate ASC, DW ASC" % (tableLabels))
+        cursor.execute("DROP TABLE effTable")
+        cursor.execute("ALTER TABLE temp_effTable RENAME TO effTable")
+        effDBConn.commit()
     if effDBConn:
         effDBConn.close()
     if stashFile:
