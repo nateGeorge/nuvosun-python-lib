@@ -198,6 +198,21 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
         print 'files processed:',filesProcessed
         pickle.dump(filesProcessed, open(logFile,'wb'))
     
+    print 'loading data from saved db'
+    startTime = datetime.datetime.now()
+    cursor.execute("SELECT * FROM effTable WHERE substrate BETWEEN {min} AND {max} AND \"Cell Eff Avg\" > {effCut};".format(min = substrateRange[0], max = substrateRange[1], effCut = effCutoff))
+    while True:
+        dataRow = cursor.fetchone()
+        if dataRow == None:
+            break
+        effData.setdefault(dataRow[0],{})
+        effData[dataRow[0]].setdefault(dataRow[1],{})
+        colCounter = 2
+        for col in colsToImport:
+            effData[dataRow[0]][dataRow[1]].setdefault(col,[]).append(dataRow[colCounter])
+            colCounter += 1
+    print 'loaded eff data from saved file'
+    print 'took', (datetime.datetime.now()-startTime).total_seconds(), 'seconds'
     return effData
 
 def effData_by_substrate(effData = None):
