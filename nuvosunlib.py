@@ -806,3 +806,28 @@ def set_saved_runsInprocessedOESDBList(PCruns, BEruns, OESDTDW):
         pickle.dump(OESDTDW, dwfile)
 
     return
+    
+def load_OES_config(tool):
+    '''
+    Loads OES configurations from excel file, returns dict of zone to index map and lists of BE and PC zones.
+    
+    :param: tool: A string; the name of the sputter tool the OES is running on (currently only MC01 or MC02).
+    '''
+    zoneToIndexMap = {}
+    BEzoneList = []
+    PCzoneList = []
+    OESconfigFile = 'Y:\Nate\OES\OES configuration.xlsx'
+    OESwb = load_workbook(filename = OESconfigFile, use_iterators=True, data_only=True)
+    ws = OESwb.get_sheet_by_name(tool)
+    firstRow = True
+    for row in ws.rows:
+        if not firstRow:
+            zoneToIndexMap[row[0].value] = row[2].value
+            if row[1].value == 'BE':
+                BEzoneList.append(row[0].value)
+            elif row[1].value == 'PC':
+                PCzoneList.append(row[0].value)
+        else:
+            firstRow = False
+    return BEzoneList, PCzoneList, zoneToIndexMap
+    
