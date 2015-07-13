@@ -192,8 +192,6 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
         cursor.execute("DROP TABLE effTable")
         cursor.execute("ALTER TABLE temp_effTable RENAME TO effTable")
         effDBConn.commit()
-    if effDBConn:
-        effDBConn.close()
     if stashFile:
         print 'files processed:',filesProcessed
         pickle.dump(filesProcessed, open(logFile,'wb'))
@@ -214,6 +212,10 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
             colCounter += 1
     print 'loaded eff data from saved file'
     print 'took', (datetime.datetime.now()-startTime).total_seconds(), 'seconds'
+    
+    if effDBConn:
+        effDBConn.close()
+    
     return effData
 
 def effData_by_substrate(effData = None):
@@ -679,6 +681,10 @@ def get_XRF_data(runs, minDW = 0):
 def get_saved_runsInOESDBList():
     '''Returns a dict of runs already in the database and a dict of their dates.
     '''
+    OESmtimeFile = 'Y:/Nate/OES/records/OESmtime.pkl'
+    runsInDBFile = 'Y:/Nate/OES/records/runsInDB.pkl'
+    runDatesInDBFile = 'Y:/Nate/OES/records/runDatesInDB.pkl'
+    OESdbFile = 'Y:/Nate/OES/databases/all OES data.csv'
     upToDate = False
     runsInDB = []
     runDatesInDB = []
