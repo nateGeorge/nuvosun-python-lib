@@ -817,7 +817,7 @@ def load_OES_config(tool):
     BEzoneList = []
     PCzoneList = []
     OESconfigFile = 'Y:\Nate\OES\OES configuration.xlsx'
-    OESwb = load_workbook(filename = OESconfigFile, use_iterators=True, data_only=True)
+    OESwb = load_workbook(filename = OESconfigFile, use_iterators=True, data_only=True, read_only=True)
     ws = OESwb.get_sheet_by_name(tool)
     firstRow = True
     for row in ws.rows:
@@ -827,7 +827,9 @@ def load_OES_config(tool):
                 BEzoneList.append(row[0].value)
             elif row[1].value == 'PC':
                 PCzoneList.append(row[0].value)
+            if re.search('\d+',str(row[5].value)):
+                MPcomPort = row[5].value
         else:
             firstRow = False
-    return BEzoneList, PCzoneList, zoneToIndexMap
+    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort
     
