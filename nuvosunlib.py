@@ -828,7 +828,7 @@ def load_OES_config(tool):
             elif row[1].value == 'PC':
                 PCzoneList.append(row[0].value)
             if re.search('\d+',str(row[5].value)):
-                MPcomPort = row[5].value
+                MPcomPort = 'COM' + row[5].value
         else:
             firstRow = False
     return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort
