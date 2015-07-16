@@ -817,19 +817,20 @@ def load_OES_config(tool):
     BEzoneList = []
     PCzoneList = []
     OESconfigFile = 'Y:\Nate\OES\OES configuration.xlsx'
-    OESwb = load_workbook(filename = OESconfigFile, use_iterators=True, data_only=True, read_only=True)
+    OESwb = load_workbook(filename = OESconfigFile)
     ws = OESwb.get_sheet_by_name(tool)
     firstRow = True
     for row in ws.rows:
         if not firstRow:
             zoneToIndexMap[row[0].value] = row[2].value
-            if row[1].value == 'BE':
+            if row[1].value == 'BE' and re.search('y', row[3].value, re.IGNORECASE):
                 BEzoneList.append(row[0].value)
-            elif row[1].value == 'PC':
+            elif row[1].value == 'PC' and re.search('y', row[3].value, re.IGNORECASE):
                 PCzoneList.append(row[0].value)
             if re.search('\d+',str(row[5].value)):
                 MPcomPort = 'COM' + str(row[5].value)
         else:
             firstRow = False
+    OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
     return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort
     
