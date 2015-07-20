@@ -1,4 +1,5 @@
 ''' TO DO:
+add data to mongoDB database instead of csv
 a. add other folders in, PC, reactor, BE
 b. detect new files and add them to DB
 c. for TCO analysis:

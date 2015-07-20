@@ -136,7 +136,7 @@ for substrate in allEffData.keys():
         df = pd.DataFrame({'DW':currentDW,'Eff':currentEff})
         bins = np.linspace(df.DW.min(), df.DW.max(), (df.DW.max() - df.DW.min())/10)
         DWgroups = df.groupby(np.digitize(df.DW, bins))
-        middleDWs = [(a+b)/2 for a,b in zip(DWgroups.min().DW + DWgroups.max().DW)]
+        middleDWs = [(a+b)/2 for a,b in zip(DWgroups.min().DW,DWgroups.max().DW)]
         avgEffs = df.mean().Eff
         minDWs = df.min().DW
         maxDWs = df.max().DW
