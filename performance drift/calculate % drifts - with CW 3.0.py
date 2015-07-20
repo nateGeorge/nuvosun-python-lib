@@ -27,14 +27,17 @@ linearFitstoData={} #dict of substrates, with linear fit to [eff,voc,jsc,ff,rs,r
 residuals={}
 
 allEffData = nsl.effData_by_substrate(nsl.import_eff_file(effCutoff = 11.1, substrateRange = [400,500]))
-basePath = 'Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/organized by substrate/'
-basePathCW = 'Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/by CW/organized by substrate/'
-basePath2 = 'Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/organized by IV parameter/'
-basePath2CW = 'Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/by CW/organized by IV parameter/'
-basePath3 = 'Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/organized by IV parameter/normalized'
-basePath3CW = 'Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/organized by IV parameter/normalized'
+baseBaseDir = 'Y:/TASK FORCE - Performance drift/eff drift fits'
+baseDir = baseBaseDir + '/new as of july 2015'
 
-for each in ['Y:/TASK FORCE - Performance drift/eff drift fits','Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/',basePath]:
+basePath = baseDir + '/organized by substrate/'
+basePathCW = baseDir + '/by CW/organized by substrate/'
+basePath2 = baseDir + '/organized by IV parameter/'
+basePath2CW = baseDir + '/by CW/organized by IV parameter/'
+basePath3 = baseDir + '/organized by IV parameter/normalized'
+basePath3CW = baseDir + '/organized by IV parameter/normalized'
+
+for each in [baseBaseDir, baseDir, baseDir + '/by CW/',basePath,basePathCW]:
     if not os.path.exists(each):
             os.mkdir(each)
 
