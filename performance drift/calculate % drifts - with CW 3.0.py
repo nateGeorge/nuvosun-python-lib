@@ -142,11 +142,11 @@ for substrate in allEffData.keys():
         maxDWs = [each for each in DWgroups.max().DW]
         binnedEff.setdefault(substrate,{})
         for each in range(len(middleDWs)):
-            binnedEff[substrate]['Eff'] = avgEffs[each]
-            binnedEff[substrate]['avg DW'] = middleDWs[each]
-            binnedEff[subDetails]['min DW'] = minDWs[each]
-            binnedEff[subDetails]['max DW'] = maxDWs[each]
-            binnedEff[subDetails]['CW'] = 'all CWs'
+            binnedEff[substrate].setdefault('Eff',[]).append(avgEffs[each])
+            binnedEff[substrate].setdefault('avg DW',[]).append(middleDWs[each])
+            binnedEff[substrate].setdefault('min DW',[]).append(minDWs[each])
+            binnedEff[substrate].setdefault('max DW',[]).append(maxDWs[each])
+            binnedEff[substrate].setdefault('CW',['all CWs'])
         
         plt.scatter(middleDWs, DWgroups.mean().Eff)
         plt.title(str(substrate)+' mean efficiency every 10m, all CWs (' + sorted(currentDataByCW.keys()) + ')')
@@ -166,11 +166,11 @@ for substrate in allEffData.keys():
             maxDWs = [each for each in DWgroups.max().DW]
             binnedEff.setdefault(substrate,{})
             for each in range(len(minDWs)):
-                binnedEffCW[substrate]['Eff'] = avgEffs[each]
-                binnedEffCW[substrate]['avg DW'] = middleDWs[each]
-                binnedEffCW[subDetails]['min DW'] = minDWs[each]
-                binnedEffCW[subDetails]['max DW'] = maxDWs[each]
-                binnedEffCW[subDetails]['CW'] = maxDWs[each]
+                binnedEffCW[substrate].setdefault('Eff',[]).append(avgEffs[each])
+                binnedEffCW[substrate].setdefault('avg DW',[]).append(middleDWs[each])
+                binnedEffCW[substrate].setdefault('min DW',[]).append(minDWs[each])
+                binnedEffCW[substrate].setdefault('max DW',[]).append(maxDWs[each])
+                binnedEffCW[substrate].setdefault('CW',[]).append(maxDWs[each])
                 
         plt.title(str(substrate)+' mean efficiency every 10m')
         plt.savefig(basePathCW+str(substrate)+'/'+str(substrate)+' 10m mean Eff, individual CWs.jpg')
@@ -374,9 +374,10 @@ with open('Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/
     binnedEffCsv = csv.writer(csvFile, delimiter=',')
     binnedEffCsv.writerow(['substrate'] + [key for key in sorted(binnedEffCW[substrate].keys())])
     for subs in sorted(binnedEff.keys()):
-        binnedEffCsv.writerow(subs + [binnedEff[subs][key] for key in sorted(binnedEff[subs].keys())])
+        binnedEffCsv.writerow(subs + [binnedEff[subs][key][each] for key in sorted(binnedEff[subs].keys())])
     for subs in sorted(binnedEffCW.keys()):
-        binnedEffCsv.writerow(subs + [binnedEffCW[subs][key] for key in sorted(binnedEff[subs].keys())])
+        for each in range(len(binnedEffCW[subs]['Eff'])):
+            binnedEffCsv.writerow(subs + [binnedEffCW[subs][key][each] for key in sorted(binnedEffCW[subs].keys())])
 exit()
 
 with open('eff sorted by tool and POR, MR600.csv', 'wb') as csvfile:
