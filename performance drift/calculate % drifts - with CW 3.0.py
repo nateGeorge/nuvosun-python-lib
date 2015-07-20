@@ -137,9 +137,9 @@ for substrate in allEffData.keys():
         bins = np.linspace(df.DW.min(), df.DW.max(), (df.DW.max() - df.DW.min())/10)
         DWgroups = df.groupby(np.digitize(df.DW, bins))
         middleDWs = [(a+b)/2 for a,b in zip(DWgroups.min().DW,DWgroups.max().DW)]
-        avgEffs = [each for each in df.mean().Eff]
-        minDWs = [each for each in df.min().DW]
-        maxDWs = [each for each in df.max().DW]
+        avgEffs = [each for each in DWgroups.mean().Eff]
+        minDWs = [each for each in DWgroups.min().DW]
+        maxDWs = [each for each in DWgroups.max().DW]
         binnedEff.setdefault(substrate,{})
         for each in range(len(middleDWs)):
             binnedEff[substrate]['Eff'] = avgEffs[each]
@@ -161,9 +161,9 @@ for substrate in allEffData.keys():
             DWgroups = df.groupby(np.digitize(df.DW, bins))
             middleDWs = [(a+b)/2 for a,b in zip(DWgroups.min().DW + DWgroups.max().DW)]
             plt.scatter(middleDWs, DWgroups.mean().Eff, label = eachCW, color = CWcolorDict[eachCW])
-            avgEffs = [each for each in df.mean().Eff]
-            minDWs = [each for each in df.min().DW]
-            maxDWs = [each for each in df.max().DW]
+            avgEffs = [each for each in DWgroups.mean().Eff]
+            minDWs = [each for each in DWgroups.min().DW]
+            maxDWs = [each for each in DWgroups.max().DW]
             binnedEff.setdefault(substrate,{})
             for each in range(len(minDWs)):
                 binnedEffCW[substrate]['Eff'] = avgEffs[each]
