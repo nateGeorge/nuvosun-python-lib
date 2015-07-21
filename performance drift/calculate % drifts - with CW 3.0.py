@@ -381,10 +381,11 @@ with open('Y:/TASK FORCE - Performance drift/eff drift fits/new as of july 2015/
     binnedEffCsv = csv.writer(csvFile, delimiter=',')
     binnedEffCsv.writerow(['substrate'] + [key for key in sorted(binnedEffCW[substrate].keys())])
     for subs in sorted(binnedEff.keys()):
-        binnedEffCsv.writerow(subs + [binnedEff[subs][key][each] for key in sorted(binnedEff[subs].keys())])
+        for each in range(len(binnedEff[subs]['Eff'])):
+            binnedEffCsv.writerow([subs] + [binnedEff[subs][key][each] for key in sorted(binnedEff[subs].keys())])
     for subs in sorted(binnedEffCW.keys()):
         for each in range(len(binnedEffCW[subs]['Eff'])):
-            binnedEffCsv.writerow(subs + [binnedEffCW[subs][key][each] for key in sorted(binnedEffCW[subs].keys())])
+            binnedEffCsv.writerow([subs] + [binnedEffCW[subs][key][each] for key in sorted(binnedEffCW[subs].keys())])
 exit()
 
 with open('eff sorted by tool and POR, MR600.csv', 'wb') as csvfile:
