@@ -37,7 +37,7 @@ basePath2CW = baseDir + '/by CW/organized by IV parameter/'
 basePath3 = baseDir + '/organized by IV parameter/normalized'
 basePath3CW = baseDir + '/organized by IV parameter/normalized'
 
-for each in [baseBaseDir, baseDir, baseDir + '/by CW/',basePath,basePathCW]:
+for each in [baseBaseDir, baseDir, baseDir + '/by CW/',basePath,basePathCW,basePath2CW+'binned DWs/']:
     if not os.path.exists(each):
             os.mkdir(each)
 
@@ -132,6 +132,13 @@ for substrate in allEffData.keys():
         currentCWs = sorted(currentDataByCW.keys())
         print currentCWs
         
+        # create directories for each substrate as we go
+        savedir=basePath+str(substrate)+'/'
+        if not os.path.exists(savedir): os.mkdir(savedir)
+        savedirCW=basePathCW+'/binned DWs all CWs/'
+        if not os.path.exists(savedirCW): os.mkdir(savedirCW)
+        if not os.path.exists(basePath2CW+'/binned DWs/eff'): os.mkdir(basePath2CW+'/binned DWs/eff')
+        
         # get average of eff from each 10m section, all CWs
         df = pd.DataFrame({'DW':currentDW,'Eff':currentEff})
         bins = np.linspace(df.DW.min(), df.DW.max(), (df.DW.max() - df.DW.min())/10)
@@ -149,9 +156,12 @@ for substrate in allEffData.keys():
             binnedEff[substrate].setdefault('CW',['all CWs'])
         
         plt.scatter(middleDWs, DWgroups.mean().Eff)
-        plt.title(str(substrate)+' mean efficiency every 10m, all CWs (' + sorted(currentDataByCW.keys()) + ')')
-        plt.savefig(basePathCW+str(substrate)+'/binned DWs all CWs/'+str(substrate)+' 10m mean Eff.jpg')
-        plt.savefig(basePath2CW+'/binned DWs/eff'+str(substrate)+' 10m mean Eff.jpg')
+        CWstring = ''
+        for theCW in sorted(currentDataByCW.keys()):
+            CWstring += ', ' + str(theCW)
+        plt.title(str(substrate)+' mean efficiency every 10m, all CWs (' + CWstring + ')')
+        plt.savefig(savedirCW+str(substrate)+' 10m mean Eff.jpg')
+        plt.savefig(basePath2CW+'/binned DWs/eff/'+str(substrate)+' 10m mean Eff.jpg')
         plt.close()
         
         # avg eff from each 10m section, each CW
@@ -159,12 +169,12 @@ for substrate in allEffData.keys():
             df = pd.DataFrame({'DW':currentDataByCW[eachCW]['DW'],'Eff':currentDataByCW[eachCW]['Cell Eff Avg']})
             bins = np.linspace(df.DW.min(), df.DW.max(), (df.DW.max() - df.DW.min())/10)
             DWgroups = df.groupby(np.digitize(df.DW, bins))
-            middleDWs = [(a+b)/2 for a,b in zip(DWgroups.min().DW + DWgroups.max().DW)]
+            middleDWs = [(a+b)/2 for a,b in zip(DWgroups.min().DW,DWgroups.max().DW)]
             plt.scatter(middleDWs, DWgroups.mean().Eff, label = eachCW, color = CWcolorDict[eachCW])
             avgEffs = [each for each in DWgroups.mean().Eff]
             minDWs = [each for each in DWgroups.min().DW]
             maxDWs = [each for each in DWgroups.max().DW]
-            binnedEff.setdefault(substrate,{})
+            binnedEffCW.setdefault(substrate,{})
             for each in range(len(minDWs)):
                 binnedEffCW[substrate].setdefault('Eff',[]).append(avgEffs[each])
                 binnedEffCW[substrate].setdefault('avg DW',[]).append(middleDWs[each])
@@ -173,7 +183,7 @@ for substrate in allEffData.keys():
                 binnedEffCW[substrate].setdefault('CW',[]).append(maxDWs[each])
                 
         plt.title(str(substrate)+' mean efficiency every 10m')
-        plt.savefig(basePathCW+str(substrate)+'/'+str(substrate)+' 10m mean Eff, individual CWs.jpg')
+        plt.savefig(savedirCW+str(substrate)+' 10m mean Eff, individual CWs.jpg')
         plt.savefig(basePath2CW+'binned DWs/'+str(substrate)+' 10m mean Eff, individual CWs.jpg')
         plt.close()
         
@@ -215,9 +225,6 @@ for substrate in allEffData.keys():
         residuals[substrate]=[np.sum(effFit[1]),np.sum(vocFit[1]),np.sum(jscFit[1]),np.sum(ffFit[1]),np.sum(rsFit[1]),np.sum(rshFit[1])]
 
         # plot raw data and fits
-        
-        savedir=basePath+str(substrate)+'/'
-        if not os.path.exists(savedir): os.makedirs(savedir)
         
         for CW in sorted(currentCWs):
             print CW
