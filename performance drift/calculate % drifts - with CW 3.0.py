@@ -153,11 +153,12 @@ for substrate in allEffData.keys():
             binnedEff[substrate].setdefault('avg DW',[]).append(middleDWs[each])
             binnedEff[substrate].setdefault('min DW',[]).append(minDWs[each])
             binnedEff[substrate].setdefault('max DW',[]).append(maxDWs[each])
-            binnedEff[substrate].setdefault('CW',['all CWs'])
+            binnedEff[substrate].setdefault('CW',[]).append(['all CWs'])
         
         plt.scatter(middleDWs, DWgroups.mean().Eff)
-        CWstring = ''
-        for theCW in sorted(currentDataByCW.keys()):
+        plt.legend()
+        CWstring = str(sorted(currentDataByCW.keys())[0])
+        for theCW in sorted(currentDataByCW.keys())[1:]:
             CWstring += ', ' + str(theCW)
         plt.title(str(substrate)+' mean efficiency every 10m, all CWs (' + CWstring + ')')
         plt.savefig(savedirCW+str(substrate)+' 10m mean Eff.jpg')
