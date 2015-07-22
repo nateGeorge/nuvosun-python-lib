@@ -156,7 +156,6 @@ for substrate in allEffData.keys():
             binnedEff[substrate].setdefault('CW',[]).append(['all CWs'])
         
         plt.scatter(middleDWs, DWgroups.mean().Eff)
-        plt.legend()
         CWstring = str(sorted(currentDataByCW.keys())[0])
         for theCW in sorted(currentDataByCW.keys())[1:]:
             CWstring += ', ' + str(theCW)
@@ -182,7 +181,8 @@ for substrate in allEffData.keys():
                 binnedEffCW[substrate].setdefault('min DW',[]).append(minDWs[each])
                 binnedEffCW[substrate].setdefault('max DW',[]).append(maxDWs[each])
                 binnedEffCW[substrate].setdefault('CW',[]).append(maxDWs[each])
-                
+        
+        plt.legend()        
         plt.title(str(substrate)+' mean efficiency every 10m')
         plt.savefig(savedirCW+str(substrate)+' 10m mean Eff, individual CWs.jpg')
         plt.savefig(basePath2CW+'binned DWs/'+str(substrate)+' 10m mean Eff, individual CWs.jpg')
@@ -403,6 +403,3 @@ with open('eff sorted by tool and POR, MR600.csv', 'wb') as csvfile:
         elif int(substrate) in [x[0] for x in mr600MC01runs] or int(substrate) in [x[0] for x in mr600MC02runs]:
             for datarow in alldata[substrate]:
                 spamwriter.writerow(datarow+allrundata[substrate]+['MR600'])
-        
-            
-            
