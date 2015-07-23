@@ -15,14 +15,15 @@ loadTime = (datetime.now()-startTime).total_seconds()
 
 print 'took', loadTime, 'seconds to load, or', loadTime/60, 'minutes'
 
-for key in PCarc440.columns:
-    if key!='DT':
-        fig = plt.figure()
-        ax = PCarc440.plot(kind='scatter', x = 'Down Web Pos', y = key)
-        PCarc450.plot(kind='scatter', x = 'Down Web Pos', y = key, ax=ax)
-        plt.show()
-        fig.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + key, edgecolor='none', bbox_inches = 'tight')
-        plt.close()
+for process in ['BE','PC']:
+    for key in eval(process + 'arc440').columns:
+        if key!='DT' and key!='Down Web Pos':
+            ax = pd.DataFrame.plot(eval(process + 'arc440'), kind='scatter', x = 'Down Web Pos', y = key, label = '440', linewidth = 0, c = 'red')
+            pd.DataFrame.plot(eval(process + 'arc450'), kind='scatter', x = 'Down Web Pos', y = key, label = '450', ax = ax, linewidth = 0, c = 'white')
+            patches, labels = ax.get_legend_handles_labels()
+            ax.legend(patches, labels, loc='best')
+            plt.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process + '/' + key, edgecolor='none', bbox_inches = 'tight')
+            plt.close()
         
 
 completeTime = (datetime.now()-startTime).total_seconds()
