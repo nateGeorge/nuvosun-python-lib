@@ -37,7 +37,7 @@ basePath2CW = baseDir + '/by CW/organized by IV parameter/'
 basePath3 = baseDir + '/organized by IV parameter/normalized'
 basePath3CW = baseDir + '/organized by IV parameter/normalized'
 
-for each in [baseBaseDir, baseDir, baseDir + '/by CW/',basePath,basePathCW,basePath2CW+'binned DWs/']:
+for each in [baseBaseDir, baseDir, baseDir + '/by CW/',basePath,basePathCW,basePath2CW]:
     if not os.path.exists(each):
             os.mkdir(each)
 
@@ -137,7 +137,7 @@ for substrate in allEffData.keys():
         if not os.path.exists(savedir): os.mkdir(savedir)
         savedirCW=basePathCW+'/binned DWs all CWs/'
         if not os.path.exists(savedirCW): os.mkdir(savedirCW)
-        if not os.path.exists(basePath2CW+'/binned DWs/eff'): os.mkdir(basePath2CW+'/binned DWs/eff')
+        if not os.path.exists(basePath2CW+'/eff'): os.mkdir(basePath2CW+'/eff')
         
         # get average of eff from each 10m section, all CWs
         df = pd.DataFrame({'DW':currentDW,'Eff':currentEff})
@@ -161,7 +161,7 @@ for substrate in allEffData.keys():
             CWstring += ', ' + str(theCW)
         plt.title(str(substrate)+' mean efficiency every 10m, all CWs (' + CWstring + ')')
         plt.savefig(savedirCW+str(substrate)+' 10m mean Eff.jpg')
-        plt.savefig(basePath2CW+'/binned DWs/eff/'+str(substrate)+' 10m mean Eff.jpg')
+        plt.savefig(basePath2CW+'/eff/'+str(substrate)+' 10m mean Eff.jpg')
         plt.close()
         
         # avg eff from each 10m section, each CW
