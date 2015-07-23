@@ -31,9 +31,10 @@ for process in processes:
         if key!='DT' and key!=DWkey:
             ax = pd.DataFrame.plot(runData[runs[0]][process], kind='scatter', x = DWkey, y = key, label = runs[0], linewidth = 0, c = 'red')
             pd.DataFrame.plot(runData[runs[1]][process], kind='scatter', x = DWkey, y = key, label = runs[1], ax = ax, linewidth = 0, c = 'white')
+            plt.title(process + ' ' + key)
             patches, labels = ax.get_legend_handles_labels()
             ax.legend(patches, labels, loc='best')
-            plt.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process + '/' + key, edgecolor='none', bbox_inches = 'tight')
+            plt.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process + '/' + process + ' ' + key, edgecolor='none', bbox_inches = 'tight')
             plt.close() 
         
 
