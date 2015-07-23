@@ -21,12 +21,16 @@ loadTime = (datetime.now()-startTime).total_seconds()
 print 'took', loadTime, 'seconds to load, or', loadTime/60, 'minutes'
 
 for process in processes:
+    if process == 'TCO':
+        DWkey = 'Down Web Position'
+    else:
+        DWkey = 'Down Web Pos'
     if not os.path.exists('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process):
         os.mkdir('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process)
     for key in runData[runs[0]][process].columns:
-        if key!='DT' and key!='Down Web Pos':
-            ax = pd.DataFrame.plot(runData[runs[0]][process], kind='scatter', x = 'Down Web Pos', y = key, label = runs[0], linewidth = 0, c = 'red')
-            pd.DataFrame.plot(runData[runs[1]][process], kind='scatter', x = 'Down Web Pos', y = key, label = runs[1], ax = ax, linewidth = 0, c = 'white')
+        if key!='DT' and key!=DWkey:
+            ax = pd.DataFrame.plot(runData[runs[0]][process], kind='scatter', x = DWkey, y = key, label = runs[0], linewidth = 0, c = 'red')
+            pd.DataFrame.plot(runData[runs[1]][process], kind='scatter', x = DWkey, y = key, label = runs[1], ax = ax, linewidth = 0, c = 'white')
             patches, labels = ax.get_legend_handles_labels()
             ax.legend(patches, labels, loc='best')
             plt.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process + '/' + key, edgecolor='none', bbox_inches = 'tight')
