@@ -292,13 +292,19 @@ def getLatestScheduleFile():
             print 'latest schedule file found: ', latestSchedFile
     return schedFileDir + latestSchedFile
     
-def getRunDates(stash_dates = True):
-    # imports latest efficiency file and grabs the run dates for each Web ID on each tool, writing to the datesFile file.  Also gets DW range for each substrate ID
-    # argument stash_dates tells the program to store the processed dates in a csv file or not.
+def getRunDates(stash_dates = True, bywebID = True):
+    ''' imports latest efficiency file and grabs the run dates for each Web ID on each tool, writing to the datesFile file.  
+    Also gets DW range for each substrate ID
+    
+    argument stash_dates tells the program to store the processed dates in a csv file or not.
+    if bywebID = True, returns a dict of the form: dates[web][webID]['BE Run'] = 010115, otherwise form is dates[web]['BE Run'] = 010115
+    '''
     print 'getting latest run dates...'
     logFile = 'Y:/Nate/get dates of runs/runDateLogFile.txt'
     datesFile = 'Y:/Nate/get dates of runs/all run dates.csv'
     dates = {}
+    dateKeys = ['BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run']
+    toolKeys = ['BE Tool', 'PC Tool']
     latestEffFile = getLatestEffFile()
     latestEffFileDate = time.ctime(os.path.getmtime(latestEffFile))
     addendaFiles = get_addenda_eff_files()
@@ -336,9 +342,6 @@ def getRunDates(stash_dates = True):
                 else:
                     dates[row['substrate']][row['Web ID']][column] = value
     else:
-        dates = {}
-        dateKeys = ['BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run']
-        toolKeys = ['BE Tool', 'PC Tool']
         recipes = ['BE Recipe', 'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe']
         badKeys =['010101AP', '', '-']
         
@@ -391,7 +394,26 @@ def getRunDates(stash_dates = True):
                         print web, webID, dates[web][webID]
                         
     print 'dates loaded'
-            
+    
+    if not bywebID:
+        newDates = {}
+        for web in dates.keys():
+            tempDWlist = {}
+            newDates.setdefault(web,{})
+            for webID in dates[web].keys():
+                for key in dateKeys:
+                    newDates[web].setdefault(key,{})
+                    newDates[web][key].setdefault(dates[web][webID][key],{})
+                    newDates[web][key][dates[web][webID][key]].setdefault('WebIDs',[]).append(webID)
+                    tempDWlist.setdefault(key,[]).append(dates[web][webID]['DW start'])
+                    tempDWlist[key].append(dates[web][webID]['DW end'])
+            # once we're sure we went through all the Web IDs, get max/min DWs for each
+            for key in newDates[web].keys():
+                newDates[web][key]['DW range'] = [min(tempDWlist[key]),min(tempDWlist[key])]
+            for key in toolKeys:
+                newDates[web].setdefault(key,dates[web][webID][key])
+        dates = newDates
+    
     return dates
 
 def getOOWls():
