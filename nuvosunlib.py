@@ -809,7 +809,7 @@ def set_saved_runsInprocessedOESDBList(PCruns, BEruns, OESDTDW):
     
 def load_OES_config(tool):
     '''
-    Loads OES configurations from excel file, returns dict of zone to index map and lists of BE and PC zones.
+    Loads OES configurations from excel file, returns dict of zone to index map, lists of BE and PC zones, and spectrometer settings.
     
     :param: tool: A string; the name of the sputter tool the OES is running on (currently only MC01 or MC02).
     '''
@@ -831,6 +831,18 @@ def load_OES_config(tool):
                 MPcomPort = 'COM' + str(row[5].value)
         else:
             firstRow = False
+    configws = OESwb.get_sheet_by_name('spectrometer settings')
+    firstRow = False
+    for row in ws.rows:
+        if not firstRow:
+            if row[0].value == 'BE':
+                BEintTime = row[1].value
+                BEnumScans = row[2].value
+            if row[0].value == 'PC':
+                BEintTime = row[1].value
+                BEnumScans = row[2].value
+        else:
+            firstRow = False
     OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
-    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort
+    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, BEintTime, BEnumScans
     
