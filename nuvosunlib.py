@@ -816,7 +816,7 @@ def load_OES_config(tool):
     zoneToIndexMap = {}
     BEzoneList = []
     PCzoneList = []
-    OESconfigFile = 'Y:\Nate\OES\OES configuration.xlsx'
+    OESconfigFile = 'Y:\Experiment Summaries\MC sputter tools OES\OES configuration.xlsx'
     OESwb = load_workbook(filename = OESconfigFile)
     ws = OESwb.get_sheet_by_name(tool)
     firstRow = True
@@ -833,16 +833,16 @@ def load_OES_config(tool):
             firstRow = False
     configws = OESwb.get_sheet_by_name('spectrometer settings')
     firstRow = False
-    for row in ws.rows:
+    for row in configws.rows:
         if not firstRow:
             if row[0].value == 'BE':
                 BEintTime = row[1].value
                 BEnumScans = row[2].value
             if row[0].value == 'PC':
-                BEintTime = row[1].value
-                BEnumScans = row[2].value
+                PCintTime = row[1].value
+                PCnumScans = row[2].value
         else:
             firstRow = False
     OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
-    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, BEintTime, BEnumScans
+    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans
     
