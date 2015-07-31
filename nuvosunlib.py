@@ -5,7 +5,7 @@ save XRF data in a stashed file
 
 from openpyxl import load_workbook
 from scipy.integrate import simps
-import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util, glob, pickle, sys
+import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util, glob, pickle, sys, traceback
 import sqlite3 as sql
 import numpy as np
 from dateutil.parser import parse as dateParser
@@ -72,7 +72,7 @@ def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = Tru
     
     effData = {}
     colsToImport = ['DW','CW','BC Run','BE Run','SE Run','PC Run','CDS Run','TCO Run',
-        'PC Tool','Baked','Cell Eff Avg',
+        'PC Tool','BE Tool','Baked','Cell Eff Avg',
         'Cell Voc Avg','Cell Jsc Avg','Cell FF Avg','Cell Rs Avg','Cell Rsh Avg', 'BE Recipe', 
         'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe', 'Substrate Lot', 'Cell ID'] # 'BC Tool','BE Tool','DateTested','Se Tool', 'Cds Tool','TCO Tool',
     realTypes = ['DW','CW','Cell Eff Avg',
@@ -357,23 +357,19 @@ def getRunDates(stash_dates = True, bywebID = True):
                 dates[web][webID]['DW start'] = effData[web][webID]['DW'][0]
                 dates[web][webID]['DW end'] = effData[web][webID]['DW'][-1]
                 
-                for count in range(len(effData[web][webID]['BE Run'])):
-                    print web
+                for count in range(len(effData[web][webID]['Cell Eff Avg'])):
                     print webID
-                    print effData[web][webID].keys()
-                    
                     # sometimes the 'BE Tool' key isn't present
                     try:
                         keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + toolKeys]
                     except KeyError:
+                        print(traceback.format_exc())
                         effData[web][webID].setdefault('BE Tool',[]).append(effData[web][webID]['PC Tool'][count])
                         keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + ['PC Tool']]
                     except IndexError:
-                        print sys.exc_info()
-                        raw_input('press enter to continue...')
-                        for eachKey in dateKeys + ['PC Tool']:
-                            print key, ':', effData[web][webID][key]
-                        continue
+                        effData[web][webID].setdefault('BE Tool',[]).append(effData[web][webID]['PC Tool'][count])
+                        print 'index error, adding to \'BE Tool\' key'
+                        keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + toolKeys]
                     if reduce(operator.mul, keysToCheck):
                     
                         for key in toolKeys + recipes + ['Substrate Lot']:
