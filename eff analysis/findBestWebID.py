@@ -16,5 +16,5 @@ for run in sorted(effData.keys()):
 with open('eff sorted by webIDs.csv','wb') as csvfile:
     effWr = csv.writer(csvfile, delimiter=',')
     effWr.writerow(['webID','avg eff'])
-    for eff in reverse(sorted(webIDmeans.keys())): # always sorts from low to high, so need to reverse
+    for eff in reversed(sorted(webIDmeans.keys())): # always sorts from low to high, so need to reverse
         effWr.writerow([webIDmeans[eff],eff])
