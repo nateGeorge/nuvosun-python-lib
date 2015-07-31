@@ -371,6 +371,9 @@ def getRunDates(stash_dates = True, bywebID = True):
                     except IndexError:
                         print sys.exc_info()
                         raw_input('press enter to continue...')
+                        for eachKey in dateKeys + ['PC Tool']:
+                            print key, ':', effData[web][webID][key]
+                        continue
                     if reduce(operator.mul, keysToCheck):
                     
                         for key in toolKeys + recipes + ['Substrate Lot']:
