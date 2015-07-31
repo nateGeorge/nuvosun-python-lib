@@ -11,7 +11,8 @@ webIDEffmeans = {}
 print sorted(effData.keys())
 for run in sorted(effData.keys()):
     for webID in sorted(effData[run].keys()):
-        webIDEffmeans[np.mean(np.array(effData[run][webID]['Cell Eff Avg'],dtype='float64'))] = webID
+        if max(float(effData[run][webID]['DW'])) - min(float(effData[run][webID]['DW'])) > 3:
+            webIDEffmeans[np.mean(np.array(effData[run][webID]['Cell Eff Avg'],dtype='float64'))] = webID
 
 with open('eff sorted by webIDs.csv','wb') as csvfile:
     effWr = csv.writer(csvfile, delimiter=',')
