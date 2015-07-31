@@ -64,7 +64,7 @@ def get_addenda_eff_files():
             addendaList.append(thing)
     return addendaList
     
-def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = True, substrateRange = [0,1000]):
+def import_eff_file(effFile = getLatestEffFile(), effCutoff = 0, stashFile = True, substrateRange = [285,1000]):
     # imports efficiency file into dictionary (which is returned), with primary keys as substrates, secondary keys as web IDs
     # crapSubstrateLabels = ['0','110110','GLOBAL','NA','REF01','SPECIAL NEW','SPECIAL OLD','SPECIAL']
     # effCutoff allows you to exclude data with efficiency below effCutoff
@@ -360,7 +360,13 @@ def getRunDates(stash_dates = True, bywebID = True):
                 
                 
                 for count in range(len(effData[web][webID]['BE Run'])):
-                    if reduce(operator.mul, [effData[web][webID][key][count] not in badKeys for key in dateKeys + toolKeys]):
+                    print effData[web][webID].keys()
+                    # sometimes the 'BE Tool' key isn't present
+                    try:
+                        keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + toolKeys]
+                    except KeyError:
+                        keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + ['PC Tool']]
+                    if reduce(operator.mul, keysToCheck):
                     
                         for key in toolKeys + recipes + ['Substrate Lot']:
                             dates[web][webID].setdefault(key, effData[web][webID][key][count])
