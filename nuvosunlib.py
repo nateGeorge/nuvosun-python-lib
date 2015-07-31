@@ -5,7 +5,7 @@ save XRF data in a stashed file
 
 from openpyxl import load_workbook
 from scipy.integrate import simps
-import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util, glob, pickle
+import csv, os, operator, datetime, shutil, errno, time, re, distutils.dir_util, glob, pickle, sys
 import sqlite3 as sql
 import numpy as np
 from dateutil.parser import parse as dateParser
@@ -357,15 +357,20 @@ def getRunDates(stash_dates = True, bywebID = True):
                 dates[web][webID]['DW start'] = effData[web][webID]['DW'][0]
                 dates[web][webID]['DW end'] = effData[web][webID]['DW'][-1]
                 
-                
-                
                 for count in range(len(effData[web][webID]['BE Run'])):
+                    print web
+                    print webID
                     print effData[web][webID].keys()
+                    
                     # sometimes the 'BE Tool' key isn't present
                     try:
                         keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + toolKeys]
                     except KeyError:
+                        effData[web][webID].setdefault('BE Tool',[]).append(effData[web][webID]['PC Tool'][count])
                         keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + ['PC Tool']]
+                    except IndexError:
+                        print sys.exc_info()
+                        raw_input('press enter to continue...')
                     if reduce(operator.mul, keysToCheck):
                     
                         for key in toolKeys + recipes + ['Substrate Lot']:
