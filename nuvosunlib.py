@@ -292,14 +292,15 @@ def getLatestScheduleFile():
             print 'latest schedule file found: ', latestSchedFile
     return schedFileDir + latestSchedFile
     
-def getRunDates(stash_dates = True, bywebID = True):
+def getRunDates(stash_dates=True, bywebID=True, verbose=True):
     ''' imports latest efficiency file and grabs the run dates for each Web ID on each tool, writing to the datesFile file.  
     Also gets DW range for each substrate ID
     
     argument stash_dates tells the program to store the processed dates in a csv file or not.
     if bywebID = True, returns a dict of the form: dates[web][webID]['BE Run'] = 010115, otherwise form is dates[web]['BE Run'] = 010115
     '''
-    print 'getting latest run dates...'
+    if verbose:
+        print 'getting latest run dates...'
     logFile = 'Y:/Nate/get dates of runs/runDateLogFile.txt'
     datesFile = 'Y:/Nate/get dates of runs/all run dates.csv'
     dates = {}
@@ -324,14 +325,16 @@ def getRunDates(stash_dates = True, bywebID = True):
                 else:
                     runDateLogFile.write('latest eff file modified last:\r\n' + last)
                     datesUpToDate = False
-                    print 'updating stashed date file with newest data'
+                    if verbose:
+                        print 'updating stashed date file with newest data'
         else:
             with open(logFile,'wb') as runDateLogFile:
                 runDateLogFile.write('latest eff file modified last:\r\n' + latestEffFileDate)
         
     
     if datesUpToDate:
-        print 'using stashed date file'
+        if verbose:
+            print 'using stashed date file'
         dateReader = csv.DictReader(open(datesFile,'rb'),delimiter = ',')
         for row in dateReader:
             dates.setdefault(row['substrate'],{})
@@ -345,9 +348,11 @@ def getRunDates(stash_dates = True, bywebID = True):
         recipes = ['BE Recipe', 'BC Recipe', 'PC Recipe', 'Se Recipe', 'TCO Recipe', 'Cds Recipe']
         badKeys =['010101AP', '', '-']
         
-        print 'importing efficiency data...'
+        if verbose:
+            print 'importing efficiency data...'
         effData = import_eff_file()
-        print 'finished importing.'
+        if verbose:
+            print 'finished importing.'
         
         for web in sorted(effData.keys()):
             dates[web] = {}
@@ -358,7 +363,8 @@ def getRunDates(stash_dates = True, bywebID = True):
                 dates[web][webID]['DW end'] = effData[web][webID]['DW'][-1]
                 
                 for count in range(len(effData[web][webID]['Cell Eff Avg'])):
-                    print webID
+                    if verbose:
+                        print webID
                     # sometimes the 'BE Tool' key isn't present
                     try:
                         keysToCheck = [effData[web][webID][key][count] not in badKeys for key in dateKeys + toolKeys]
@@ -380,9 +386,10 @@ def getRunDates(stash_dates = True, bywebID = True):
                             dates[web][webID].setdefault(key, tempDate)
                             
                             if dates[web][webID][key] != tempDate:
-                                print web, webID, key
-                                print 'date in effData:', effData[web][webID][key][count], 'doesn\'t match date already in dict:', dates[web][webID][key]
-                                print 'overwriting...'
+                                if verbose:
+                                    print web, webID, key
+                                    print 'date in effData:', effData[web][webID][key][count], 'doesn\'t match date already in dict:', dates[web][webID][key]
+                                    print 'overwriting...'
                                 dates[web][webID][key] = tempDate
 
             else:
@@ -403,7 +410,8 @@ def getRunDates(stash_dates = True, bywebID = True):
                         print 'key error: ', ke
                         print web, webID, dates[web][webID]
                         
-    print 'dates loaded'
+    if verbose:
+        print 'dates loaded'
     
     if not bywebID:
         newDates = {}
