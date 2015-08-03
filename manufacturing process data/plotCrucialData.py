@@ -7,14 +7,15 @@ startTime = datetime.now()
     
 plt.style.use('dark_background')
 
-processes = ['BE','PC','TCO']
+#processes = ['BE','PC','TCO']
+processes = ['TCO','PC']
 runs = ['440','450']
 runData = {}
 
 for run in runs:
     runData.setdefault(run,{})
     for process in processes:
-        runData[run][process] = pd.read_excel('C:/Users/nathan.george/Downloads/' + run + ' ' + process + ' crucial data.xlsx')
+        runData[run][process] = pd.read_excel('C:/Users/nathan.george/Downloads/' + run + ' ' + process + ' crucial.xlsx')
 
 loadTime = (datetime.now()-startTime).total_seconds()
 
@@ -34,7 +35,7 @@ for process in processes:
             plt.title(process + ' ' + key)
             patches, labels = ax.get_legend_handles_labels()
             ax.legend(patches, labels, loc='best')
-            plt.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process + '/' + process + ' ' + key, edgecolor='none', bbox_inches = 'tight')
+            plt.savefig('Y:/Nate/git/nuvosun-python-lib/manufacturing process data/' + process + '/' + process + ' ' + key + '.png', edgecolor='none', bbox_inches = 'tight')
             plt.close() 
         
 
