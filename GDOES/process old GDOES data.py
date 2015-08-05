@@ -14,14 +14,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import simps # this line isn't working for me from the Y: drive
 import pandas as pd
-sys.path.append("Y:\Nate\code\\")
-import nuvosunlib as ns
+sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
+import nuvosunlib as nsl
 import sqlite3 as sql
 
 # since I have to run from the C: drive now, need to change folders into the file directory for storage files
 os.chdir(os.path.dirname(os.path.realpath(__file__))) 
-############# GENERAL OPTIONS
 
+############# GENERAL OPTIONS
 logProcessing = False
 keepRecordsOfStats = False
 debuggingMode = False
@@ -30,7 +30,7 @@ runCutoff = 286
 # plotting options
 plt.style.use('ggplot')
 plotBy = 'X'
-dataPath = 'Y:/Nate/GDOES/data/TCO/' # path for saving images
+savePlotsPath = 'Y:/Nate/GDOES/data/TCO/'
 
 ############ SOME CONSTANTS
 
@@ -44,7 +44,7 @@ sumReString = sumReString[:-1]
 
 startTime = time.time() # for tracking how long the program takes to run
 
-ReliRunsDict = ns.getReliRunsDict() # a dictionary of good/bad reli runs with fields: ['bake time'] = '12h', ['SC result'] = 'bad', ['SC TTF'] = 1200
+ReliRunsDict = nsl.getReliRunsDict() # a dictionary of good/bad reli runs with fields: ['bake time'] = '12h', ['SC result'] = 'bad', ['SC TTF'] = 1200
 
 def parse_file_details(sumReString):
     """Returns dictionary of files with their paths, modified time, and quality of the sample as 
@@ -1069,7 +1069,7 @@ for folder in GDOESfolders.keys():
         for a in ax:
             plt.setp(eval(a).get_yticklabels()[-1], visible=False)
 
-        plt.savefig(dataPath + 'plots/' + file[:-3] + '.png', facecolor = 'w')
+        plt.savefig(savePlotsPath + 'plots/' + file[:-3] + '.png', facecolor = 'w')
         plt.close()
         if logProcessing:
             outf.close()
