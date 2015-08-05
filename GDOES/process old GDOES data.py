@@ -23,6 +23,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 ############# GENERAL OPTIONS
 logProcessing = False
+savePlots = False
 keepRecordsOfStats = False
 debuggingMode = False
 saveFileInfo = True
@@ -82,7 +83,6 @@ def parse_file_details(sumReString):
                             break
                 
                 filePath = root + '/' + file
-
                 fileMtime = os.path.getmtime(filePath)
                 
                 if debuggingMode:
@@ -180,7 +180,6 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
             cellNumber = re.search('\d\d\d\d\d\d+',file).group(0)
         else:
             cellNumber = 'unknown'
-        
         
         ################# populate runData dict with parsed parameters from path and file
         returnedRunData[file] = {}
@@ -651,7 +650,6 @@ if logProcessing:
     sys.stdout = outf
     sys.stderr = (open(baseFileSavePath + 'GDOESerrlog.txt', 'w'))
 
-
 folderListExists, GDOESfolders = check_if_folders_uptodate(GDOESfolders)
 
 for folder in GDOESfolders.keys():
@@ -663,15 +661,13 @@ for folder in GDOESfolders.keys():
         runData = parse_run_details_andSave(fileDict, GDOESfolders)
         parse_GDOES_row_labels_andSaveData(runData)
 
-        '''was having trouble parsing all the file info then going straight
+        '''it was having trouble parsing all the file info then going straight
            into loading the files.  For now have to run the script twice'''
         continue
         exit()
         
     ##############################
     # write initial header line to csv file
-
-
     ReliKeys = sorted(ReliRunsDict['304'].keys())
 
     dataWriter = csv.writer(open(baseFileSavePath + 'all GDOES data.csv', 'wb'),delimiter = ',')
@@ -694,7 +690,6 @@ for folder in GDOESfolders.keys():
     ReliIntegrationWriter = csv.writer(open(baseFileSavePath + 'all GDOES integration data - with reli labels.csv','wb'), delimiter = ',')
 
     ReliIntegrationWriter.writerow(intLabels + borderLabels + runDataLabels + ['file name','after process step'] + ReliKeys)
-
 
     pid = os.getpid()
     #######################################
@@ -785,8 +780,6 @@ for folder in GDOESfolders.keys():
                     dataStarted = True
         print 'loaded ', file
 
-        #if allGDOESdata[file]['Cu 325/Fi'] <
-
         if not plasmaOn:
             print 'skipping file becasue plasma never turned on'
             del allGDOESdata[file]
@@ -847,8 +840,6 @@ for folder in GDOESfolders.keys():
             if key not in labelsNotInElementDict:
                 allGDOESdata[file][key + '/Fi'] = np.divide(allGDOESdata[file][key],allGDOESdata[file]['Fi'])
 
-
-
         for key in allGDOESdata[file].keys():
             for mvaKey in mvaKeys:
                 if re.search(mvaKey,key):
@@ -857,7 +848,6 @@ for folder in GDOESfolders.keys():
                     MVA20 = (forwardMVA + reverseMVA[::-1])/2
                     allGDOESdata[file][key + ' mva20'] = MVA20
                     allGDOESdata[file][key + ' mva20'][np.isnan(allGDOESdata[file][key + ' mva20'])] = 0
-
 
         # from 384 DW 182 CW 46, ex situ
         CuMultiplier = 0.663324546134
@@ -870,13 +860,11 @@ for folder in GDOESfolders.keys():
         allGDOESdata[file]['Ga %'] = allGDOESdata[file]['Ga 417/Fi'] / GaMultiplier
         allGDOESdata[file]['Cu+In+Ga %'] = allGDOESdata[file]['Cu %'] + allGDOESdata[file]['In %'] + allGDOESdata[file]['Ga %']
 
-
         hitCigs = False
         hitMoSe = False
         hitMo = False
         hitFe = False
         hitFeBack = False
-
 
         CIGSstartIndex = len(allGDOESdata[file]['X'])-5
         MoSestartIndex = len(allGDOESdata[file]['X'])-4
@@ -884,13 +872,10 @@ for folder in GDOESfolders.keys():
         FestartIndex = len(allGDOESdata[file]['X'])-2
         FeBackstartIndex = len(allGDOESdata[file]['X'])-1 # by default set this to last element of the array(s)
 
-
         for count in range(len(allGDOESdata[file]['X'])):
             allGDOESdata[file]['Cu3'].append((allGDOESdata[file]['Cu 325/Fi'][count] / CuMultiplier) / ((allGDOESdata[file]['In 451/Fi'][count] / InMultiplier) + (allGDOESdata[file]['Ga 417/Fi'][count] / GaMultiplier)))
 
         for count in range(len(allGDOESdata[file]['X'])-21):
-
-
             if not hitCigs and allGDOESdata[file]['X'][count]>3: # if no copper observed yet (i.e. not in the CIGS layer)
                 if allGDOESdata[file]['Cu 325/Fi mva20'][count] > 0.02 and allGDOESdata[file]['X'][count] > 4.0:
                     CIGSstartTimeOffset = allGDOESdata[file]['X'][count]
@@ -914,8 +899,6 @@ for folder in GDOESfolders.keys():
                     FeBackstartTimeOffset = allGDOESdata[file]['X'][count]
                     FeBackstartIndex = count
                     hitFeBack = True
-
-
 
         if not hitMo:
             MostartIndex = list(allGDOESdata[file]['Mo 317/Fi mva20']).index(max(allGDOESdata[file]['Mo 317/Fi mva20']))
@@ -953,12 +936,7 @@ for folder in GDOESfolders.keys():
             hitCigs = False
             CIGSstartIndex = len(allGDOESdata[file]['X'])-5
 
-
-
-
         print CIGSstartIndex, MoSestartIndex, MostartIndex, FestartIndex, FeBackstartIndex
-
-
 
         #borderIndices[file] = {}
         '''borderIndices[file]['CIGSstartIndex'] = CIGSstartIndex
@@ -966,7 +944,6 @@ for folder in GDOESfolders.keys():
         borderIndices[file]['MoSestartIndex'] = MoSestartIndex
         borderIndices[file]['MostartIndex'] = MostartIndex
         borderIndices[file]['FestartIndex'] = FestartIndex'''
-
 
         if hitCigs:
             borderTimes[file]['CIGS start'] = allGDOESdata[file]['X'][CIGSstartIndex]
@@ -995,8 +972,6 @@ for folder in GDOESfolders.keys():
             if not re.search('X', key):
                 allGDOESdataIntegration[file][key] = simps(allGDOESdata[file][key],allGDOESdata[file]['X'])
 
-
-
         if hitCigs:
             allGDOESdataIntegration[file]['In in ITO'] = simps(allGDOESdata[file]['In 451/Fi'][:CIGSstartIndex],allGDOESdata[file]['X'][:CIGSstartIndex])
             allGDOESdataIntegration[file]['In in CIGS'] = simps(allGDOESdata[file]['In 451/Fi'][CIGSstartIndex:],allGDOESdata[file]['X'][CIGSstartIndex:])
@@ -1014,62 +989,60 @@ for folder in GDOESfolders.keys():
                     allGDOESdataIntegration[file]['Na in MoSe2'] = simps(allGDOESdata[file]['Na 590/Fi'][MoSestartIndex:MostartIndex],allGDOESdata[file]['X'][MoSestartIndex:MostartIndex])
                     allGDOESdataIntegration[file]['Na in Mo'] = simps(allGDOESdata[file]['Na 590/Fi'][MostartIndex:],allGDOESdata[file]['X'][MostartIndex:])
 
+        # plot GDOES data, only works for TCO full stack data
+        if savePlots and folder == 'TCO':
+            f, (ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9) = plt.subplots(9, sharex = True)
+            ax = ['ax' + str(each) for each in range(1,10)]
 
-        f, (ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9) = plt.subplots(9, sharex = True)
-        ax = ['ax' + str(each) for each in range(1,10)]
+            ax1.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['In 451/Fi'])
+            ax2.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Zn 335/Fi'])
+            ax3.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Cd 229/Fi'])
+            ax4.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Cu 325/Fi'])
+            ax4.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Cu 325/Fi mva20'])
+            ax5.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Mo 317/Fi'])
+            ax5.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Mo 317/Fi mva20'])
+            ax6.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Fe 386/Fi'])
+            ax6.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Fe 386/Fi mva20'])
+            ax7.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Se 207/Fi'])
+            ax7.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Se 207/Fi mva20'])
+            ax8.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Na 590/Fi'])
+            ax9.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Fi'])
+            if hitCigs:
+                ax1.axvline(borderTimes[file]['CIGS start'])
+                if hitMoSe:
+                    ax5.axvline(borderTimes[file]['MoSe start'])
+                    if hitMo:
+                        ax5.axvline(borderTimes[file]['Mo start'])
+                        if hitFe:
+                            ax6.axvline(borderTimes[file]['Fe start'])
+                            if hitFeBack:
+                                ax6.axvline(FeBackstartTimeOffset)
+            ax1.set_ylabel('In')
+            ax2.set_ylabel('Zn')
+            ax3.set_ylabel('Cd')
+            ax4.set_ylabel('Cu')
+            ax5.set_ylabel('Mo')
+            ax6.set_ylabel('Fe')
+            ax7.set_ylabel('Se 207')
+            ax8.set_ylabel('Na')
+            ax9.set_ylabel('Fi')
+            ax8.set_xlabel(plotBy)
 
-        ax1.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['In 451/Fi'])
-        ax2.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Zn 335/Fi'])
-        ax3.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Cd 229/Fi'])
-        ax4.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Cu 325/Fi'])
-        ax4.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Cu 325/Fi mva20'])
-        ax5.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Mo 317/Fi'])
-        ax5.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Mo 317/Fi mva20'])
-        ax6.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Fe 386/Fi'])
-        ax6.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Fe 386/Fi mva20'])
-        ax7.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Se 207/Fi'])
-        ax7.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Se 207/Fi mva20'])
-        ax8.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Na 590/Fi'])
-        ax9.plot(allGDOESdata[file][plotBy], allGDOESdata[file]['Fi'])
-        if hitCigs:
-            ax1.axvline(borderTimes[file]['CIGS start'])
-            if hitMoSe:
-                ax5.axvline(borderTimes[file]['MoSe start'])
-                if hitMo:
-                    ax5.axvline(borderTimes[file]['Mo start'])
-                    if hitFe:
-                        ax6.axvline(borderTimes[file]['Fe start'])
-                        if hitFeBack:
-                            ax6.axvline(FeBackstartTimeOffset)
-        ax1.set_ylabel('In')
-        ax2.set_ylabel('Zn')
-        ax3.set_ylabel('Cd')
-        ax4.set_ylabel('Cu')
-        ax5.set_ylabel('Mo')
-        ax6.set_ylabel('Fe')
-        ax7.set_ylabel('Se 207')
-        ax8.set_ylabel('Na')
-        ax9.set_ylabel('Fi')
-        ax8.set_xlabel(plotBy)
+            plt.tight_layout()
+            figure = plt.gcf() # get current figure
+            figure.set_size_inches(12, 8)
+            figure.subplots_adjust(hspace = 0.01)
+            figure.suptitle(runData[file]['substrate'] + ', ' + file + ', signals normalized by Fi')
+            for a in ax:
+                plt.setp(eval(a).get_yticklabels()[-1], visible=False)
 
-
-        plt.tight_layout()
-        figure = plt.gcf() # get current figure
-        figure.set_size_inches(12, 8)
-        figure.subplots_adjust(hspace = 0.01)
-        figure.suptitle(runData[file]['substrate'] + ', ' + file + ', signals normalized by Fi')
-        for a in ax:
-            plt.setp(eval(a).get_yticklabels()[-1], visible=False)
-
-        plt.savefig(savePlotsPath + 'plots/' + file[:-3] + '.png', facecolor = 'w')
-        plt.close()
+            plt.savefig(savePlotsPath + 'plots/' + file[:-3] + '.png', facecolor = 'w')
+            plt.close()
         if logProcessing:
             outf.close()
 
-
 write_GDOES_data()
 endTime = time.time()
-#print 'total time run:', totalTimeRun
 
 print 'took', endTime - startTime, 'seconds'
 print 'or', (endTime - startTime)/60, 'minutes'
