@@ -449,7 +449,7 @@ def OESparameters(normalizations = False):
     :param: normalizations : boolean, whether to return normalization keys (/Fi, /Ar-811, /Fi/Ar-811)
     '''
     elementList = ['Cu-325-327','Cu-515','In-451','Ga-417','Se-473','Ar-811','Na-589','Mo-380','Ti-496-522','O-777','H-656','Fi']
-    colorList = ['yellow','dark yellow','orange','grey','maroon','red','lightcoral','purple','green','blue','bisque','pink']
+    colorList = ['yellow','lightyellow','orange','grey','maroon','red','lightcoral','purple','green','blue','bisque','pink']
     OESminList = [321.0, 513.0, 449.0, 414.0, 470.0, 808.0, 587.0, 378.0, 496.0, 775.0, 654.0, 200.0] #wavelength minimums for OES integration
     OESmaxList = [330.0, 517.0, 453.0, 418.0, 475.0, 815.0, 589.0, 382.0, 522.0, 779.0, 658.0, 890.3067897] #wavelength maxs
 
