@@ -872,17 +872,22 @@ def load_OES_config(tool):
         else:
             firstRow = False
     configws = OESwb.get_sheet_by_name('spectrometer settings')
-    firstRow = False
     for row in configws.rows:
-        if not firstRow:
             if row[0].value == 'BE':
                 BEintTime = row[1].value
                 BEnumScans = row[2].value
             if row[0].value == 'PC':
                 PCintTime = row[1].value
                 PCnumScans = row[2].value
+    eqnws = OESwb.get_sheet_by_name('Cu3 - OES correlation')
+    notFirstRow = False
+    fitCoeffs = []
+    for row in eqnws.rows:
+        if notFirstRow:
+            fitCoeffs = [row[0].value, row[1].value]
+            break
         else:
-            firstRow = False
+            notFirstRow = True
     OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
-    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans
+    return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans, fitCoeffs
     
