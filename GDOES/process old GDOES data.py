@@ -33,10 +33,10 @@ plotBy = 'X'
 savePlotsPath = 'Y:/Nate/GDOES/data/TCO/'
 
 ############ SOME CONSTANTS
-
-goodIndicators = ['ok','good','very good','great','ok noisy','question','questionable']
+# quality of measurement, noted in file name
+goodIndicators = ['ok','good','very good','great','ok noisy','question','questionable'] 
 badIndicators = ['noisy','bad','spikes','weird']
-sumReString = ''
+sumReString = '' # string for re (regular expression) for searching for quality label in filename
 
 for indicator in goodIndicators + badIndicators:
     sumReString += '(' + indicator + ')|'
