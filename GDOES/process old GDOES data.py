@@ -205,10 +205,10 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
             print returnedRunData[file]
             
     if saveFileInfo:
-        runDatapkl = open('runData-' + folder + '.pkl','wb')
-        fileDictpkl = open('fileDict-' + folder + '.pkl','wb')
-        foldersPkl = open('GDOESfolderList.pkl','wb')
-        pickle.dump(runData,runDatapkl)
+        runDatapkl = open(baseFileSavePath + 'runData-' + folder + '.pkl','wb')
+        fileDictpkl = open(baseFileSavePath + 'fileDict-' + folder + '.pkl','wb')
+        foldersPkl = open(baseFileSavePath + 'GDOESfolderList.pkl','wb')
+        pickle.dump(runData, runDatapkl)
         pickle.dump(dictOfFiles, fileDictpkl)
         pickle.dump(GDOESfolders, foldersPkl)
         runDatapkl.close()
@@ -218,30 +218,30 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
     return returnedRunData
 
 def check_if_folders_uptodate(GDOESfolders):
-    if os.path.isfile('GDOESfolderList.pkl'):
-        GDOESfolders = pickle.load(open('GDOESfolderList.pkl','rb'))
+    if os.path.isfile(baseFileSavePath + 'GDOESfolderList.pkl'):
+        GDOESfolders = pickle.load(open(baseFileSavePath + 'GDOESfolderList.pkl','rb'))
         fileWasThere = True
     else:
         for folder in GDOESfolders.keys():
             GDOESfolders[folder]['latestMtime'] = os.path.getmtime(GDOESfolders[folder]['path'])
         if saveFileInfo:
-            pickle.dump(GDOESfolders, open('GDOESfolderList.pkl','wb'))
+            pickle.dump(GDOESfolders, open(baseFileSavePath + 'GDOESfolderList.pkl','wb'))
         fileWasThere = False
     return fileWasThere, GDOESfolders
 
 def load_file_details():
     print 'loading file data from pickle files'
-    with open('runData-' + folder + '.pkl','rb') as tf:
+    with open(baseFileSavePath + 'runData-' + folder + '.pkl','rb') as tf:
         runData = pickle.load(tf)
-    with open('fileDict-' + folder + '.pkl','rb') as tf:
+    with open(baseFileSavePath + 'fileDict-' + folder + '.pkl','rb') as tf:
         fileDict = pickle.load(tf)
-    with open('allGDOESdataKeys-'+folder,'rb') as wf:
+    with open(baseFileSavePath + 'allGDOESdataKeys-'+folder,'rb') as wf:
         allGDOESdataKeys = pickle.load(wf)
-    with open('allGDOESIntegrationKeys-'+folder,'rb') as wf:
+    with open(baseFileSavePath + 'allGDOESIntegrationKeys-'+folder,'rb') as wf:
         allGDOESIntegrationKeys = pickle.load(wf)
-    with open('GDOESkeyDict-'+folder,'rb') as wf:
+    with open(baseFileSavePath + 'GDOESkeyDict-'+folder,'rb') as wf:
          GDOESkeyDict = pickle.load(wf)
-    with open('labelsNotInElementDict-'+folder,'rb') as wf:
+    with open(baseFileSavePath + 'labelsNotInElementDict-'+folder,'rb') as wf:
         labelsNotInElementDict = pickle.load(wf)
     return runData, fileDict, allGDOESdataKeys, allGDOESIntegrationKeys, GDOESkeyDict, labelsNotInElementDict
 
@@ -273,17 +273,13 @@ def parse_GDOES_row_labels_andSaveData(runData):
     GDOESkeyDict = {}
     # if we want to take a look at how the files are being parsed by parse_file_details(), make debuggingMode = True
     if debuggingMode:
-        sumf = open('sum file list.csv','wb')
+        sumf = open(baseFileSavePath + 'sum file list.csv','wb')
         sumWriter = csv.writer(sumf, delimiter = ',')
         sumWriter.writerow([key for key in runData[runData.keys()[0]]])
     
-    
     for file in sorted(runData.keys()):
-    
-    
         if debuggingMode:
             sumWriter.writerow([runData[file][key] for key in runData[runData.keys()[0]]])
-        
         
         GDOESkeyDict[file] = {}
         if 'csvFile' in globals():
@@ -393,9 +389,6 @@ def parse_GDOES_row_labels_andSaveData(runData):
             for mvaKey in mvaKeys:
                 if re.search(mvaKey,key):
                     labels.append(key + ' mva20')
-
-
-
 
         allGDOESdataKeys = set(labels) | set(allGDOESdataKeys)
         allGDOESIntegrationKeys = set(labels) | set(allGDOESIntegrationKeys)
@@ -544,15 +537,12 @@ def parse_GDOES_row_labels_andSaveData(runData):
             for mvaKey in mvaKeys:
                 if re.search(mvaKey,key):
                     labels.append(key + ' mva20')
-
-
-
-
+        
         allGDOESdataKeys = set(labels) | set(allGDOESdataKeys)
         allGDOESIntegrationKeys = set(labels) | set(allGDOESIntegrationKeys)
         
     if debuggingMode:
-        with open('output.txt','w') as f:
+        with open(baseFileSavePath + 'output.txt','w') as f:
             sys.stdout = f
             print len(GDOESformats),'number of different file formats'
             print len(elementDicts),'number of element dicts'
@@ -576,19 +566,19 @@ def parse_GDOES_row_labels_andSaveData(runData):
             print 'total file size:', totalFileSize
 
     if saveFileInfo:
-        with open('allGDOESdataKeys-'+folder,'wb') as wf:
+        with open(baseFileSavePath + 'allGDOESdataKeys-'+folder,'wb') as wf:
             pickle.dump(allGDOESdataKeys,wf)
-        with open('allGDOESIntegrationKeys-'+folder,'wb') as wf:
+        with open(baseFileSavePath + 'allGDOESIntegrationKeys-'+folder,'wb') as wf:
             pickle.dump(allGDOESIntegrationKeys,wf)
-        with open('GDOESkeyDict-'+folder,'wb') as wf:
+        with open(baseFileSavePath + 'GDOESkeyDict-'+folder,'wb') as wf:
             pickle.dump(GDOESkeyDict,wf)
-        with open('labelsNotInElementDict-'+folder,'wb') as wf:
+        with open(baseFileSavePath + 'labelsNotInElementDict-'+folder,'wb') as wf:
             pickle.dump(labelsNotInElementDict,wf)
         
     # writes GDOESkeyDict to csv file
     if debuggingMode:
         someKeys = ['mult','pos','rawlabel']
-        with open('GDOESKEYDICT.CSV','wb') as csvf:
+        with open(baseFileSavePath + 'GDOESKEYDICT.CSV','wb') as csvf:
             keyWriter = csv.writer(csvf,delimiter=',')
             keyWriter.writerow(['substrate','file'] + [key for key in sorted(allGDOESdataKeys)])
             for file in GDOESkeyDict.keys():
@@ -601,7 +591,7 @@ def parse_GDOES_row_labels_andSaveData(runData):
                 keyWriter.writerow(rowToWrite)
 
     if logProcessing:
-        outf = open('GDOESoutlog.txt','a')
+        outf = open(baseFileSavePath + 'GDOESoutlog.txt','a')
         sys.stdout=outf
     
     endTime = time.time()
@@ -657,9 +647,9 @@ GDOESfolders['PC'] = {}
 GDOESfolders['PC']['path'] = basePath + 'PC/'
 
 if logProcessing:
-    outf = open('GDOESoutlog.txt', 'w')
+    outf = open(baseFileSavePath + 'GDOESoutlog.txt', 'w')
     sys.stdout = outf
-    sys.stderr = (open('GDOESerrlog.txt', 'w'))
+    sys.stderr = (open(baseFileSavePath + 'GDOESerrlog.txt', 'w'))
 
 
 folderListExists, GDOESfolders = check_if_folders_uptodate(GDOESfolders)
@@ -684,8 +674,8 @@ for folder in GDOESfolders.keys():
 
     ReliKeys = sorted(ReliRunsDict['304'].keys())
 
-    dataWriter = csv.writer(open('all GDOES data.csv', 'wb'),delimiter = ',')
-    ReliDataWriter = csv.writer(open('all GDOES data - with reli labels.csv', 'wb'),delimiter = ',')
+    dataWriter = csv.writer(open(baseFileSavePath + 'all GDOES data.csv', 'wb'),delimiter = ',')
+    ReliDataWriter = csv.writer(open(baseFileSavePath + 'all GDOES data - with reli labels.csv', 'wb'),delimiter = ',')
 
     otherXs = ['X by CIGS top','X by MoSe2 top','X by Mo top','X by Fe top']
     allGDOESdataKeys = list(allGDOESdataKeys)
@@ -698,10 +688,10 @@ for folder in GDOESfolders.keys():
     intLabels = sorted(allGDOESIntegrationKeys)
     borderLabels = ['CIGS start','MoSe start','Mo start','Fe start']
 
-    integrationWriter = csv.writer(open('all GDOES integration data.csv','wb'), delimiter = ',')
+    integrationWriter = csv.writer(open(baseFileSavePath + 'all GDOES integration data.csv','wb'), delimiter = ',')
     integrationWriter.writerow(intLabels + borderLabels + runDataLabels + ['file name','after process step'])
 
-    ReliIntegrationWriter = csv.writer(open('all GDOES integration data - with reli labels.csv','wb'), delimiter = ',')
+    ReliIntegrationWriter = csv.writer(open(baseFileSavePath + 'all GDOES integration data - with reli labels.csv','wb'), delimiter = ',')
 
     ReliIntegrationWriter.writerow(intLabels + borderLabels + runDataLabels + ['file name','after process step'] + ReliKeys)
 
@@ -717,7 +707,7 @@ for folder in GDOESfolders.keys():
     fileCount = 0
     for file in sorted(runData.keys()):
         if logProcessing:
-            outf = open('GDOESoutlog.txt','a')
+            outf = open(baseFileSavePath + 'GDOESoutlog.txt','a')
             sys.stdout=outf
         if int(runData[file]['substrate']) < runCutoff:
             print 'skipping',file,'because substrate',runData[file]['substrate'],'under', runCutoff
