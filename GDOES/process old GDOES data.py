@@ -30,7 +30,8 @@ runCutoff = 286
 # plotting options
 plt.style.use('ggplot')
 plotBy = 'X'
-savePlotsPath = 'Y:/Nate/GDOES/data/TCO/'
+savePlotsPath = 'Y:/Characterization/GDOES/plots of processed files/'
+baseFileSavePath = 'Y:/Characterization/GDOES/lists of processed files/'
 
 ############ SOME CONSTANTS
 # quality of measurement, noted in file name
@@ -113,6 +114,7 @@ def parse_file_details(sumReString):
 def parse_run_details_andSave(dictOfFiles, GDOESfolders):
     """Return a dictionary of files with classification details of cells and GDOES measurements 
     from scanning paths/filenames in dictOfFiles.
+    Saved details of runs in .pkl files (python pickle files)
 
     :param dictOfFiles: A dictionary of the form ``dictOfFiles[file]['filePath'] = path_to_file``.
     path_to_file includes the filename.
