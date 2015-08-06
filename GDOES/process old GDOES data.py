@@ -25,7 +25,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 logProcessing = False
 savePlots = False
 keepRecordsOfStats = False
-debuggingMode = False
+debuggingMode = True
 saveFileInfo = True
 runCutoff = 286
 # plotting options
@@ -632,8 +632,11 @@ def write_GDOES_data():
             pickle.dump(filesSaved,wf)
     
     return
-    
-mvaKeys = ['Se','Cu 325/Fi','Mo 317/Fi','Fe 386/Fi']
+ 
+######################################################################################
+# the process starts here
+
+mvaKeys = ['Se','Cu 325/Fi','Mo 317/Fi','Fe 386/Fi'] # keys to take moving averages of
 
 runData = {}
 runDataLabels = ['substrate', 'DW', 'CW', 'baked', 'bake time', 'pressure', 'power', 'cell number', 'sample number']
