@@ -889,6 +889,9 @@ def load_OES_config(tool):
                 break
         else:
             notFirstRow = True
-    OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
+    try:
+        OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
+    except:
+        print 'OES config file was open, couldn\'t close it'
     return BEzoneList, PCzoneList, zoneToIndexMap, MPcomPort, BEintTime, BEnumScans, PCintTime, PCnumScans, fitCoeffs
     
