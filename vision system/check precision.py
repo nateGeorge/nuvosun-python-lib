@@ -44,6 +44,8 @@ def plot_data(yRange=None):
     plt.errorbar(range(len(avgCells.index)), avgCells[column], yerr=stdCells[column], fmt='o')
     ax = plt.gca()
     ax.set(xticks=range(len(avgCells.index)), xticklabels=avgCells.index)
+    xlims = ax.get_xlim()
+    ax.set_xlim([lim-1 for lim in xlims])
     # adjust yRange if it was specified
     if yRange!=None:
         ax.set_ylim(yRange)
@@ -57,8 +59,8 @@ def plot_data(yRange=None):
     mng = plt.get_current_fig_manager()
     mng.window.state('zoomed')
     plt.show()
-    path1 = 'Y:/Test data/ACT02/vision inspection/plot_100_cells/with zeros removed/'
-    path2 = 'Y:/Nate/git/nuvosun-python-lib/vision system/plot_100_cells/with zeros removed/'
+    path1 = 'Y:/Test data/ACT02/vision inspection/plot_100_cells/'
+    path2 = 'Y:/Nate/git/nuvosun-python-lib/vision system/plot_100_cells/'
     fig.savefig(path1 + fileName, bbox_inches = 'tight')
     fig.savefig(path2 + fileName, bbox_inches = 'tight')
 
