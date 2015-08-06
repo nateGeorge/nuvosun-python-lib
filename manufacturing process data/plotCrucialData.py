@@ -32,6 +32,7 @@ for process in processes:
         if key!='DT' and key!=DWkey:
             ax = pd.DataFrame.plot(runData[runs[0]][process], kind='scatter', x = DWkey, y = key, label = runs[0], linewidth = 0, c = 'red')
             pd.DataFrame.plot(runData[runs[1]][process], kind='scatter', x = DWkey, y = key, label = runs[1], ax = ax, linewidth = 0, c = 'white')
+            plt.xlim(runData[runs[1]][process][key].mean() - runData[runs[1]][process][key].std(), runData[runs[1]][process][key].mean() + runData[runs[1]][process][key].std())
             plt.title(process + ' ' + key)
             patches, labels = ax.get_legend_handles_labels()
             ax.legend(patches, labels, loc='best')
