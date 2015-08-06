@@ -884,8 +884,9 @@ def load_OES_config(tool):
     fitCoeffs = []
     for row in eqnws.rows:
         if notFirstRow:
-            fitCoeffs = [row[0].value, row[1].value]
-            break
+            if row[0] == tool:
+                fitCoeffs = [row[1].value, row[2].value]
+                break
         else:
             notFirstRow = True
     OESwb.save(OESconfigFile) # will not close the file (unlock it) unless it is saved
