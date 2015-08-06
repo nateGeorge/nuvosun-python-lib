@@ -39,7 +39,7 @@ def plot_data(yRange=None):
     '''
     Plots and saves the cell measurement data.  Returns nothing.
     '''
-    fig = plt.figure()
+    fig = plt.figure(figsize=(18,12))
     ax = plt.subplot(111)
     plt.errorbar(range(len(avgCells.index)), avgCells[column], yerr=stdCells[column], fmt='o')
     ax = plt.gca()
@@ -54,15 +54,17 @@ def plot_data(yRange=None):
         fileName = column
     plt.subplots_adjust(bottom=0.2, right=0.98, left=0.05)
     plt.title(column)
+    plt.ylabel('mm')
     locs, labels = plt.xticks()
     plt.setp(labels, rotation=90)
     mng = plt.get_current_fig_manager()
     mng.window.state('zoomed')
-    plt.show()
+    #plt.show()
     path1 = 'Y:/Test data/ACT02/vision inspection/plot_100_cells/'
     path2 = 'Y:/Nate/git/nuvosun-python-lib/vision system/plot_100_cells/'
     fig.savefig(path1 + fileName, bbox_inches = 'tight')
     fig.savefig(path2 + fileName, bbox_inches = 'tight')
+    plt.close()
 
 plt.style.use('dark_background')
 
