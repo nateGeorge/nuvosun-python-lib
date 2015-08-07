@@ -68,7 +68,8 @@ def plot_data(yRange=None):
 
 plt.style.use('dark_background')
 
-visionDF = pd.read_excel('C:/Users/nathan.george/Downloads/100 vision cells.xlsx')
+visionDF = pd.read_excel('Y:/Nate/git/nuvosun-python-lib/vision system/100 vision cells.xlsx')
+meausurementFile = pd.read_excel('Y:/Nate/git/nuvosun-python-lib/vision system/measuredData.xlsx')
 cells = visionDF.groupby('Cell Id')
 avgCells = cells.mean()
 stdCells = cells.std()
