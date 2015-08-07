@@ -644,7 +644,11 @@ def write_GDOES_data():
                     rawIntegratedGDOEStoWrite.append(allGDOESdataIntegration[file][key])
                 except KeyError:
                     rawIntegratedGDOEStoWrite.append(0.0)
-            dataWriter.writerow(rawGDOEStoWrite + [runData[file][key] for key in runDataLabels] + [file,folder])
+            rawWriteData = rawGDOEStoWrite + [runData[file][key] for key in runDataLabels] + [file,folder]
+            dataWriter.writerow(rawWriteData)
+            # insert into mysqldb
+            curse.execute(sqlRawDataInsertStr, rawWriteData)
+            conn.commit()
             if runData[file]['substrate'] in ReliRunsDict.keys():
                 ReliDataWriter.writerow(rawGDOEStoWrite + [runData[file][key] for key in runDataLabels] + [file,folder] + [ReliRunsDict[runData[file]['substrate']][key] for key in ReliKeys])
         for key in borderLabels:
@@ -652,7 +656,11 @@ def write_GDOES_data():
                 rawIntegratedGDOEStoWrite.append(borderTimes[file][key])
             except KeyError:
                 rawIntegratedGDOEStoWrite.append(0.0)
-        integrationWriter.writerow(rawIntegratedGDOEStoWrite + [runData[file][key] for key in runDataLabels] + [file,folder])
+        intWriteData = rawIntegratedGDOEStoWrite + [runData[file][key] for key in runDataLabels] + [file,folder]
+        integrationWriter.writerow(intWriteData)
+        # insert into mysqldb
+        curse.execute(sqlIntDataInsertStr, intWriteData)
+        conn.commit()
         if runData[file]['substrate'] in ReliRunsDict.keys():
             ReliIntegrationWriter.writerow(rawIntegratedGDOEStoWrite + [runData[file][key] for key in runDataLabels] + [file,folder] + [ReliRunsDict[runData[file]['substrate']][key] for key in ReliKeys])
         filesSaved.append(file)
@@ -742,13 +750,17 @@ for folder in GDOESfolders.keys():
     sqlDBs = [eachDB[0] for eachDB in curse.fetchall()]
     if sqlDBname not in sqlDBs:
         curse.execute('create database ' + sqlDBname)
-    curse.execute('use database gdoes_data')
+    curse.execute('use database ' + sqlDBname)
     curse.execute('show tables')
     gdoesTables = [eachTable[0] for eachTable in curse.fetchall()]
     if 'raw_data' not in gdoesTables:
         curse.execute('create table raw_data' + sqlDataColumns)
     if 'integration_data' not in gdoesTables:
         curse.execute('create table integration_data' + sqlIntegrationColumns)
+    sqlRawDataInsertStr = 'insert into raw_data' + sqlDataColumns
+    sqlRawDataInsertStr += ('%s, '*(len(list(allGDOESdataKeys) + textColumns)))[:-2]
+    sqlIntDataInsertStr = 'insert into integration_data' + sqlIntegrationColumns
+    sqlIntDataInsertStr += ('%s, '*(len(intLabels + borderLabels + textColumns)))[:-2]
         
     
     # get process ID for checking if memory is about to fill up
