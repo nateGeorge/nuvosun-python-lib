@@ -721,10 +721,10 @@ def get_XRF_data(runs, minDW = 0):
 def get_saved_runsInOESDBList():
     '''Returns a dict of runs already in the database and a dict of their dates.
     '''
-    OESmtimeFile = 'Y:/Nate/OES/records/OESmtime.pkl'
-    runsInDBFile = 'Y:/Nate/OES/records/runsInDB.pkl'
-    runDatesInDBFile = 'Y:/Nate/OES/records/runDatesInDB.pkl'
-    OESdbFile = 'Y:/Nate/OES/databases/all OES data.csv'
+    OESmtimeFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/OESmtime.pkl'
+    runsInDBFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/runsInDB.pkl'
+    runDatesInDBFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/runDatesInDB.pkl'
+    OESdbFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/all OES data.csv'
     upToDate = False
     runsInDB = []
     runDatesInDB = []
@@ -747,10 +747,10 @@ def set_saved_runsInOESDBList(runsInDB, runDatesInDB):
     :param: runsInDB: list of runs that have been entered in the database.
     :param: runDateLogFile: list of run dates that have been entered in database (folders with data are labeled by date, not run)
     '''
-    OESmtimeFile = 'Y:/Nate/OES/records/OESmtime.pkl'
-    runsInDBFile = 'Y:/Nate/OES/records/runsInDB.pkl'
-    runDatesInDBFile = 'Y:/Nate/OES/records/runDatesInDB.pkl'
-    OESdbFile = 'Y:/Nate/OES/databases/all OES data.csv'
+    OESmtimeFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/OESmtime.pkl'
+    runsInDBFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/runsInDB.pkl'
+    runDatesInDBFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/runDatesInDB.pkl'
+    OESdbFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/databases/all OES data.csv'
     pickle.dump(os.path.getmtime(OESdbFile), open(OESmtimeFile, 'wb'))
     pickle.dump(runsInDB, open(runsInDBFile, 'wb'))
     pickle.dump(runDatesInDB, open(runDatesInDBFile, 'wb'))
@@ -761,9 +761,9 @@ def get_saved_runsInprocessedOESDBList():
     and dicts of PC BE runs already in the processed databases.
     
     '''
-    writtenPCrunsFile = 'Y:/Nate/OES/records/processed_OESPCruns.pkl'
-    writtenBErunsFile = 'Y:/Nate/OES/records/processed_OESBEruns.pkl'
-    OESDTDWFile = 'Y:/Nate/OES/records/processed_OESDTDW.pkl'
+    writtenPCrunsFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/processed_OESPCruns.pkl'
+    writtenBErunsFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/processed_OESBEruns.pkl'
+    OESDTDWFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/processed_OESDTDW.pkl'
     if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile) and os.path.isfile(OESDTDWFile):
         with open(writtenPCrunsFile) as PCfile:
             writtenPCruns = pickle.load(PCfile)
@@ -778,9 +778,9 @@ def get_saved_runsInprocessedOESDBList():
     
     processedPCUpToDate = True
     processedBEUpToDate = True
-    processed_OESmtimeFile = 'Y:/Nate/OES/records/PROCESSED_OESmtime.pkl'
-    processed_runsInDBFile = 'Y:/Nate/OES/records/PROCESSED_runsInDB.pkl'
-    processed_runDatesInDBFile = 'Y:/Nate/OES/records/PROCESSED_runDatesInDB.pkl'
+    processed_OESmtimeFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/PROCESSED_OESmtime.pkl'
+    processed_runsInDBFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/PROCESSED_runsInDB.pkl'
+    processed_runDatesInDBFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/PROCESSED_runDatesInDB.pkl'
     
     upToDate = False
     runsInDB = []
@@ -820,9 +820,9 @@ def set_saved_runsInprocessedOESDBList(PCruns, BEruns, OESDTDW):
     :param: PCruns: list of PC runs that have been entered in the PROCESSED OES database.
     :param: BEruns: list of BE runs that have been entered in the PROCESSED OES database.
     '''
-    writtenPCrunsFile = 'Y:/Nate/OES/records/processed_OESPCruns.pkl'
-    writtenBErunsFile = 'Y:/Nate/OES/records/processed_OESBEruns.pkl'
-    OESDTDWFile = 'Y:/Nate/OES/records/processed_OESDTDW.pkl'
+    writtenPCrunsFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/processed_OESPCruns.pkl'
+    writtenBErunsFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/processed_OESBEruns.pkl'
+    OESDTDWFile = 'Y:/Experiment Summaries/MC sputter tools OES/data/records/processed_OESDTDW.pkl'
     if os.path.isfile(writtenPCrunsFile) and os.path.isfile(writtenPCrunsFile):
         with open(writtenPCrunsFile) as PCfile:
             writtenPCruns = pickle.load(PCfile)
@@ -856,7 +856,7 @@ def load_OES_config(tool):
     zoneToIndexMap = {}
     BEzoneList = []
     PCzoneList = []
-    OESconfigFile = 'Y:\Experiment Summaries\MC sputter tools OES\OES configuration.xlsx'
+    OESconfigFile = 'Y:/Experiment Summaries/MC sputter tools OES/OES configuration.xlsx'
     OESwb = load_workbook(filename = OESconfigFile)
     ws = OESwb.get_sheet_by_name(tool)
     firstRow = True
