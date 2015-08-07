@@ -48,6 +48,9 @@ startTime = time.time() # for tracking how long the program takes to run
 
 ReliRunsDict = nsl.getReliRunsDict() # a dictionary of good/bad reli runs with fields: ['bake time'] = '12h', ['SC result'] = 'bad', ['SC TTF'] = 1200
 
+global earliestRunTime
+global totalFileSize
+
 def parse_file_details(sumReString):
     """Returns dictionary of files with their paths, modified time, and quality of the sample as 
     indicated by the summary file (....sum.jy).
@@ -59,6 +62,8 @@ def parse_file_details(sumReString):
     
     """
     print 'getting new files'
+    global earliestRunTime
+    global totalFileSize
     totalFileSize = 0
     earliestRunTime = 9999999999.0 # for finding the earliest run there was, time since epoch now is roughly 1430000000.0, so this should be greater than that
     fileDict = {}
@@ -286,6 +291,8 @@ def parse_GDOES_row_labels_andSaveData(runData):
     filesWithoutElementDict = []
     labelsNotInElementDict = []
     GDOESkeyDict = {}
+    global earliestRunTime
+    global totalFileSize
     # if we want to take a look at how the files are being parsed by parse_file_details(), make debuggingMode = True
     if debuggingMode:
         sumf = open(baseFileSavePath + folder + ' sum file list.csv','wb')
@@ -557,6 +564,7 @@ def parse_GDOES_row_labels_andSaveData(runData):
         allGDOESIntegrationKeys = set(labels) | set(allGDOESIntegrationKeys)
         
     if debuggingMode:
+        currentStdOut = sys.stdout
         with open(baseFileSavePath + 'output.txt','w') as f:
             sys.stdout = f
             print len(GDOESformats),'number of different file formats'
@@ -579,6 +587,7 @@ def parse_GDOES_row_labels_andSaveData(runData):
 
             print 'earliest run time:', time.localtime(earliestRunTime)
             print 'total file size:', totalFileSize
+        sys.stdout = currentStdOut
 
     if saveFileInfo:
         with open(baseFileSavePath + 'allGDOESdataKeys-'+folder,'wb') as wf:
