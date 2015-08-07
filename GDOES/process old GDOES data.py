@@ -228,7 +228,7 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
         runDatapkl = open(baseFileSavePath + 'runData-' + folder + '.pkl','wb')
         fileDictpkl = open(baseFileSavePath + 'fileDict-' + folder + '.pkl','wb')
         foldersPkl = open(baseFileSavePath + 'GDOESfolderList.pkl','wb')
-        pickle.dump(runData, runDatapkl)
+        pickle.dump(returnedRunData, runDatapkl)
         pickle.dump(dictOfFiles, fileDictpkl)
         pickle.dump(GDOESfolders, foldersPkl)
         runDatapkl.close()
@@ -653,7 +653,7 @@ def write_GDOES_data():
         filesSaved.append(file)
     
     if saveFileInfo:
-        with open('GDOES files saved - ' + folder, 'wb') as wf:
+        with open(baseFileSavePath + 'GDOES files saved - ' + folder, 'wb') as wf:
             pickle.dump(filesSaved,wf)
     
     return
@@ -670,8 +670,8 @@ basePath = 'Y:/Characterization/GDOES/'
 GDOESfolders = {}
 GDOESfolders['TCO'] = {}
 GDOESfolders['TCO']['path'] = basePath + 'TCO/'
-GDOESfolders['PC'] = {}
-GDOESfolders['PC']['path'] = basePath + 'PC/'
+#GDOESfolders['PC'] = {}
+#GDOESfolders['PC']['path'] = basePath + 'PC/'
 
 if logProcessing:
     outf = open(baseFileSavePath + 'GDOESoutlog.txt', 'w')
@@ -688,11 +688,8 @@ for folder in GDOESfolders.keys():
         fileDict = parse_file_details(sumReString)
         runData = parse_run_details_andSave(fileDict, GDOESfolders)
         parse_GDOES_row_labels_andSaveData(runData)
-
         '''it was having trouble parsing all the file info then going straight
            into loading the files.  For now have to run the script twice'''
-        continue
-        exit()
         
     ##############################
     # write initial header line to csv file
@@ -1069,7 +1066,8 @@ for folder in GDOESfolders.keys():
         if logProcessing:
             outf.close()
 
-write_GDOES_data()
+if 'allGDOESdata' in globals():
+    write_GDOES_data()
 endTime = time.time()
 
 print 'took', endTime - startTime, 'seconds'
