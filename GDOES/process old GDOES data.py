@@ -31,8 +31,8 @@ runCutoff = 286
 # plotting options
 plt.style.use('ggplot')
 plotBy = 'X'
-savePlotsPath = 'Y:/Characterization/GDOES/plots of processed files/'
-baseFileSavePath = 'Y:/Characterization/GDOES/lists of processed files/'
+savePlotsPath = 'Y:/Characterization/GDOES/processed data/plots of processed files/'
+baseFileSavePath = 'Y:/Characterization/GDOES/processed data/lists of processed files/'
 
 ############ SOME CONSTANTS
 # quality of measurement, noted in file name
@@ -54,11 +54,13 @@ def parse_file_details(sumReString):
     
     :param sumReString: string for searching the ...sum.jy files to find quality of the 
     sample (i.e. good, bad, weird)
+    returns :
+    dict fileDict with keys ['mTime','filePath','burn quality']
+    
     """
     print 'getting new files'
     totalFileSize = 0
     earliestRunTime = 9999999999.0 # for finding the earliest run there was, time since epoch now is roughly 1430000000.0, so this should be greater than that
-    GDOESfolders[folder]['latestMtime'] = os.path.getmtime(GDOESfolders[folder]['path'])
     fileDict = {}
     for root, dirs, files in os.walk(GDOESfolders[folder]['path']):
         for file in files:
@@ -109,7 +111,7 @@ def parse_file_details(sumReString):
                     fileDict[file]['filePath'] = filePath
                     fileDict[file]['mtime'] = fileMtime
                     fileDict[file]['burn quality'] = burnQuality
-    return fileDict, GDOESfolders
+    return fileDict
 
 def parse_run_details_andSave(dictOfFiles, GDOESfolders):
     """Return a dictionary of files with classification details of cells and GDOES measurements 
@@ -165,21 +167,32 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
             sampleNumber = re.search('burn\s*(\d+)', file).group(1)
         else:
             sampleNumber = 'N/A'
-        # pressure setting of GDOES measurement, can be in filename or directory
-        if re.search('Pa',dictOfFiles[file]['filePath']):
+        # pressure setting of GDOES measurement, can be in filename or path
+        if re.search('Pa', dictOfFiles[file]['filePath']):
             pressure = re.search('(\d*)\s*k*Pa', dictOfFiles[file]['filePath'], re.IGNORECASE).group(1)
         else:
             pressure = 'unknown'
         # GDOES power setting, can be in filename or path
-        if re.search('(\d+)\s*W',dictOfFiles[file]['filePath'],re.IGNORECASE):
+        if re.search('(\d+)\s*W', dictOfFiles[file]['filePath'],re.IGNORECASE):
             power = re.search('(\d+)\s*W', dictOfFiles[file]['filePath'], re.IGNORECASE).group(1) + 'W'
         else:
             power = 'unknown'
         # cell barcode number
-        if re.search('\d\d\d\d\d\d',file):
-            cellNumber = re.search('\d\d\d\d\d\d+',file).group(0)
+        if re.search('\d\d\d\d\d\d', file):
+            cellNumber = re.search('\d\d\d\d\d\d+', file).group(0)
         else:
             cellNumber = 'unknown'
+        # run date
+        '''
+        runDateFound = False
+        for year in ['15','16','17']:
+            if re.search('\d\d\d\d' + year, dictOfFiles[file]['filePath']):
+                runDate = re.search('\d\d\d\d' + year, dictOfFiles[file]['filePath']).group(0)
+                runData = datetime.strftime(runData, '%m%d%y')
+                runDateFound = True
+            elif not runDateFound and year == '17':
+                runDate = datetime.fromtimestamp(dictOfFiles[file]['mtime'])
+        '''
         
         ################# populate runData dict with parsed parameters from path and file
         returnedRunData[file] = {}
@@ -189,6 +202,8 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
             returnedRunData[file]['calibration'] = 'true'
         else:
             returnedRunData[file]['calibration'] = 'false'
+        
+        returnedRunData[file]['modified time'] = dictOfFiles[file]['mtime']
         returnedRunData[file]['substrate'] = runNumber
         returnedRunData[file]['DW'] = dwPos
         returnedRunData[file]['CW'] = cwPos
@@ -204,6 +219,7 @@ def parse_run_details_andSave(dictOfFiles, GDOESfolders):
             print returnedRunData[file]
             
     if saveFileInfo:
+        GDOESfolders[folder]['latestMtime'] = os.path.getmtime(GDOESfolders[folder]['path'])
         runDatapkl = open(baseFileSavePath + 'runData-' + folder + '.pkl','wb')
         fileDictpkl = open(baseFileSavePath + 'fileDict-' + folder + '.pkl','wb')
         foldersPkl = open(baseFileSavePath + 'GDOESfolderList.pkl','wb')
@@ -272,7 +288,7 @@ def parse_GDOES_row_labels_andSaveData(runData):
     GDOESkeyDict = {}
     # if we want to take a look at how the files are being parsed by parse_file_details(), make debuggingMode = True
     if debuggingMode:
-        sumf = open(baseFileSavePath + 'sum file list.csv','wb')
+        sumf = open(baseFileSavePath + folder + ' sum file list.csv','wb')
         sumWriter = csv.writer(sumf, delimiter = ',')
         sumWriter.writerow([key for key in runData[runData.keys()[0]]])
     
@@ -660,7 +676,7 @@ for folder in GDOESfolders.keys():
     if folderListExists and GDOESfolders[folder]['latestMtime'] == os.path.getmtime(GDOESfolders[folder]['path']):
         runData, fileDict, allGDOESdataKeys, allGDOESIntegrationKeys, GDOESkeyDict, labelsNotInElementDict = load_file_details()
     else:        
-        fileDict, GDOESfolders = parse_file_details(sumReString)
+        fileDict = parse_file_details(sumReString)
         runData = parse_run_details_andSave(fileDict, GDOESfolders)
         parse_GDOES_row_labels_andSaveData(runData)
 
