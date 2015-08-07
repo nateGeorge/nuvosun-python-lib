@@ -17,6 +17,7 @@ import pandas as pd
 sys.path.append("Y:/Nate/git/nuvosun-python-lib/")
 import nuvosunlib as nsl
 import sqlite3 as sql
+import MySQLdb
 
 # since I have to run from the C: drive now, need to change folders into the file directory for storage files
 os.chdir(os.path.dirname(os.path.realpath(__file__))) 
@@ -33,6 +34,7 @@ plt.style.use('ggplot')
 plotBy = 'X'
 savePlotsPath = 'Y:/Characterization/GDOES/processed data/plots of processed files/'
 baseFileSavePath = 'Y:/Characterization/GDOES/processed data/lists of processed files/'
+saveMySQL = True
 
 ############ SOME CONSTANTS
 # quality of measurement, noted in file name
@@ -624,6 +626,9 @@ def parse_GDOES_row_labels_andSaveData(runData):
     return
 
 def write_GDOES_data():
+    '''
+    Saves processed GDOES to the csv file, but also in a mysql database (if the boolean option saveMySQL = True)
+    '''
     for file in sorted(allGDOESdata.keys()):
         print 'saving data for file ', file
         for count in range(len(allGDOESdata[file]['X'])):
@@ -692,7 +697,7 @@ for folder in GDOESfolders.keys():
            into loading the files.  For now have to run the script twice'''
         
     ##############################
-    # write initial header line to csv file
+    # write initial header line to csv files
     ReliKeys = sorted(ReliRunsDict['304'].keys())
 
     dataWriter = csv.writer(open(baseFileSavePath + 'all GDOES data.csv', 'wb'),delimiter = ',')
@@ -702,20 +707,51 @@ for folder in GDOESfolders.keys():
     allGDOESdataKeys = list(allGDOESdataKeys)
     for anX in otherXs:
         allGDOESdataKeys.append(anX)
-
-    dataWriter.writerow(sorted(list(allGDOESdataKeys)) + runDataLabels + ['file name','after process step',])
+        
+    dataRows = sorted(list(allGDOESdataKeys)) + runDataLabels + ['file name','after process step']
+    textColumns = runDataLabels + ['file name','after process step']
+    sqlDataColumns = '(' + ', '.join(
+        [str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in sorted(list(allGDOESdataKeys))]) + ', '.join(
+        [str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' VARCHAR(255)' for e in textColumns]) + ')'
+    dataWriter.writerow(dataRows)
     ReliDataWriter.writerow(sorted(list(allGDOESdataKeys)) + runDataLabels + ['file name','after process step'] + ReliKeys)
 
     intLabels = sorted(allGDOESIntegrationKeys)
     borderLabels = ['CIGS start','MoSe start','Mo start','Fe start']
 
     integrationWriter = csv.writer(open(baseFileSavePath + 'all GDOES integration data.csv','wb'), delimiter = ',')
-    integrationWriter.writerow(intLabels + borderLabels + runDataLabels + ['file name','after process step'])
+    integrationRowLabels = intLabels + borderLabels + runDataLabels + ['file name','after process step']
+    sqlIntegrationColumns = '(' + ', '.join(
+        [str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' REAL' for e in (intLabels + borderLabels)]) + ', '.join(
+        [str(e).replace(" ", "_").replace("-","_").replace("/","_") + ' VARCHAR(255)' for e in textColumns]) + ')'
+    integrationWriter.writerow(integrationRowLabels)
 
     ReliIntegrationWriter = csv.writer(open(baseFileSavePath + 'all GDOES integration data - with reli labels.csv','wb'), delimiter = ',')
 
     ReliIntegrationWriter.writerow(intLabels + borderLabels + runDataLabels + ['file name','after process step'] + ReliKeys)
 
+    # initialize mySQL db if not already there
+    sqlDBname = 'gdoes_data'
+    conn = MySQLdb.connect (host = "localhost",
+                            user = "operator",
+                            passwd = "nvs2011",
+                            #db = tool + "_OESdata",
+                            port = 3306)
+    curse = conn.cursor()
+    curse.execute('show databases')
+    sqlDBs = [eachDB[0] for eachDB in curse.fetchall()]
+    if sqlDBname not in sqlDBs:
+        curse.execute('create database ' + sqlDBname)
+    curse.execute('use database gdoes_data')
+    curse.execute('show tables')
+    gdoesTables = [eachTable[0] for eachTable in curse.fetchall()]
+    if 'raw_data' not in gdoesTables:
+        curse.execute('create table raw_data' + sqlDataColumns)
+    if 'integration_data' not in gdoesTables:
+        curse.execute('create table integration_data' + sqlIntegrationColumns)
+        
+    
+    # get process ID for checking if memory is about to fill up
     pid = os.getpid()
     #######################################
     # collect data here
