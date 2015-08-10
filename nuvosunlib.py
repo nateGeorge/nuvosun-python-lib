@@ -884,7 +884,7 @@ def load_OES_config(tool):
     fitCoeffs = []
     for row in eqnws.rows:
         if notFirstRow:
-            if row[0] == tool:
+            if row[0].value == tool:
                 fitCoeffs = [row[1].value, row[2].value]
                 break
         else:
