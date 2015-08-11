@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 import pylab as plt
 import numpy as np
@@ -69,22 +70,47 @@ def plot_data(yRange=None):
 plt.style.use('dark_background')
 
 visionDF = pd.read_excel('Y:/Nate/git/nuvosun-python-lib/vision system/100 vision cells.xlsx')
-meausurementFile = pd.read_excel('Y:/Nate/git/nuvosun-python-lib/vision system/measuredData.xlsx')
 handMeausured = pd.read_excel('Y:/Nate/git/nuvosun-python-lib/vision system/100 hand measured.xlsx')
 cells = visionDF.groupby('Cell Id')
 avgCells = cells.mean()
 stdCells = cells.std()
-print handMeausured.columns
+handMeausured = handMeausured.set_index('Cell Id')
 
 atVisionColumns = False
 for column in visionDF.columns:
     if column == 'Cell Length':
         atVisionColumns = True
     if atVisionColumns:
-        plot_data()
+        # exclude outliers
+        camData = visionDF[np.abs(visionDF[column]-visionDF[column].mean())<=3*visionDF[column].std()]
+        cells = camData.groupby('Cell Id')
+        avgCells = cells.mean()
+        avgC = pd.DataFrame(avgCells)
+        diff = pd.DataFrame(avgC[column].subtract(handMeausured[column], axis = 'index'))
+        # plot the data
+        fig = plt.figure(figsize=(20,14))
+        ax = plt.subplot(111)
+        plt.scatter(range(len(diff.index)), diff[column])
+        plt.title(column + ' camera measured minus hand measured')
+        # set xticks to rotated cell Id's, and trim range to proper levels
+        ax = plt.gca()
+        ax.set(xticks=range(len(diff.index)), xticklabels=diff.index)
+        ax.set_xlim([min(range(len(diff.index))), max(range(len(diff.index)))])
+        plt.ylabel('mm')
+        locs, labels = plt.xticks()
+        plt.setp(labels, rotation=90)
+        
+        # save images
+        path1 = 'Y:/Test data/ACT02/vision inspection/plot_100_cells/cam-human diff/'
+        path2 = 'Y:/Nate/git/nuvosun-python-lib/vision system/cam-human diff/'
+        fig.savefig(path1 + column, bbox_inches = 'tight')
+        fig.savefig(path2 + column, bbox_inches = 'tight')
+        plt.close()
+        
+        '''plot_data()
         outliers = is_outlier(avgCells[column])
         non_outliers = np.array(avgCells[column])[~outliers]
         stdOutliers = is_outlier(stdCells[column])
         std_non_outliers = np.array(stdCells[column])[~stdOutliers]
         yRange = [(min(std_non_outliers) + min(non_outliers))*0.999, (max(std_non_outliers) + max(non_outliers))*1.001]
-        plot_data(yRange = yRange)
+        plot_data(yRange = yRange)'''
